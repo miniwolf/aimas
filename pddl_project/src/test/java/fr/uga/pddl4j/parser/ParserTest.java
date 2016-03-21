@@ -17,7 +17,7 @@
  * along with PDDL4J.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package test.java.fr.uga.pddl4j.parser;
+package fr.uga.pddl4j.parser;
 
 import org.junit.Test;
 
@@ -51,7 +51,7 @@ public class ParserTest {
     /**
      * The path of the benchmarks files.
      */
-    private static final String BENCH_DIR = "benchmarks" + File.separator;
+    private static final String BENCH_DIR = "pddl_project/benchmarks" + File.separator;
 
     /**
      * PDDL files extension.
