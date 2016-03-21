@@ -17,7 +17,7 @@
  * along with PDDL4J.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package fr.uga.pddl4j.parser;
+package test.java.fr.uga.pddl4j.parser;
 
 import org.junit.Test;
 
