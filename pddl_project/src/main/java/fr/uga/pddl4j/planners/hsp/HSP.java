@@ -181,7 +181,7 @@ public final class HSP {
         final CodedProblem pb = Encoder.encode(domain, problem);
         long end = System.currentTimeMillis();
         this.preprocessingTime = end - begin;
-        this.problemMemory = MemoryAgent.deepSizeOf(pb);
+        //this.problemMemory = MemoryAgent.deepSizeOf(pb);
         return pb;
     }
 
@@ -337,9 +337,9 @@ public final class HSP {
             this.searchingTime = end - begin;
         }
         // Compute the memory used by the search
-        this.searchingMemory += MemoryAgent.deepSizeOf(closeSet) + MemoryAgent.deepSizeOf(openSet)
-            + MemoryAgent.deepSizeOf(open);
-        this.searchingMemory += MemoryAgent.deepSizeOf(heuristic);
+        //this.searchingMemory += MemoryAgent.deepSizeOf(closeSet) + MemoryAgent.deepSizeOf(openSet)
+//            + MemoryAgent.deepSizeOf(open);
+//        this.searchingMemory += MemoryAgent.deepSizeOf(heuristic);
         this.nbOfExploredNodes = closeSet.size();
         // return the plan computed or null if no plan was found
         return plan;
