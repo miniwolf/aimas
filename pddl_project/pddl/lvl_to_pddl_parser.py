@@ -8,16 +8,18 @@ def get_text_from_file(filepath):
 
 PDDL_PROBLEM_TEMPLATE = """
 (define (problem {problem_name}) (:domain {domain_name})
-   {requirements}
    (:objects \n{objects})
    (:init \n{init})
-   (:goal \n{goal})
+   (:goal
+        (and (forall (?g1 - goal)
+               (exists (?b1 - box ?c - cell ?l - letter)
+                 (and (GoalAt ?g1 ?c) (Letter ?g1 ?l)
+                      (BoxAt ?b1 ?c) (Letter ?b1 ?l))))))
 )
 """
 
 problem_name = "projprob1"
 domain_name = "PROJECT"
-requirements = "(:requirements :typing)"
 initials = []
 objects = {
     "agent": [],
@@ -31,7 +33,7 @@ CELL_TEMPLATE = "cell%dx%d"
 AGENT_TEMPLATE = "agent%d"
 BOX_TEMPLATE = "box%d"
 GOAL_TEMPLATE = "goal%d"
-LETTER_TEMPLATE = "letter%s"
+LETTER_TEMPLATE = "letter_%s"
 
 NEIGHBOUR_TEMPLATE = "(Neighbour %s %s)"  # % (CELL_TEMPLATE, CELL_TEMPLATE)
 AGENT_AT_TEMPLATE = "(AgentAt %s %s)"  # % (AGENT_TEMPLATE, CELL_TEMPLATE)
@@ -73,7 +75,7 @@ for i, line in enumerate(level):
             initials.append(AGENT_AT_TEMPLATE % (agent, cell))
             agent_id += 1
         elif char.isalpha():
-            letter = LETTER_TEMPLATE % char
+            letter = LETTER_TEMPLATE % char.lower()
             if char.islower():
                 goal = GOAL_TEMPLATE % goal_id
                 objects["goal"].append(goal)
@@ -82,7 +84,6 @@ for i, line in enumerate(level):
                 initials.append(FREE_TEMPLATE % cell)
                 goal_id += 1
             elif char.isupper():
-                letter += "cap"
                 box = BOX_TEMPLATE % box_id
                 objects["box"].append(box)
                 initials.append(BOX_AT_TEMPLATE % (box, cell))
@@ -95,8 +96,8 @@ initials_string = "\n".join(initials)
 object_string = ""
 for key in objects.keys():
     object_string += "{} - {}\n".format(" ".join(objects[key]), key)
-text = PDDL_PROBLEM_TEMPLATE.format(problem_name=problem_name, domain_name=domain_name, requirements=requirements,
-                                    objects=object_string, init=initials_string, goal="")
+text = PDDL_PROBLEM_TEMPLATE.format(problem_name=problem_name, domain_name=domain_name,
+                                    objects=object_string, init=initials_string)
 
 if len(sys.argv) == 3:
     with open(sys.argv[2], "w") as f:

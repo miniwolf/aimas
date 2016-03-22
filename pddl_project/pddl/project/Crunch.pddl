@@ -1,12 +1,11 @@
 
 (define (problem projprob1) (:domain PROJECT)
-   (:requirements :typing)
    (:objects
-box0 box1 box2 box3 - box
-letterc letterb letterAcap lettera letterd letterBcap letterDcap letterCcap - letter
-goal0 goal1 goal2 goal3 - goal
-cell1x1 cell1x3 cell1x4 cell1x5 cell1x6 cell2x1 cell2x2 cell2x4 cell2x5 cell2x6 cell3x1 cell3x3 cell3x5 cell3x6 cell4x1 cell4x2 cell4x3 cell4x4 cell4x6 cell5x1 cell5x6 cell6x1 cell6x2 cell6x3 cell6x4 cell6x5 cell6x6 - cell
+letter_c letter_b letter_a letter_d - letter
 agent0 - agent
+cell1x1 cell1x3 cell1x4 cell1x5 cell1x6 cell2x1 cell2x2 cell2x4 cell2x5 cell2x6 cell3x1 cell3x3 cell3x5 cell3x6 cell4x1 cell4x2 cell4x3 cell4x4 cell4x6 cell5x1 cell5x6 cell6x1 cell6x2 cell6x3 cell6x4 cell6x5 cell6x6 - cell
+goal0 goal1 goal2 goal3 - goal
+box0 box1 box2 box3 - box
 )
    (:init
 (Neighbour cell1x1 cell2x1)
@@ -21,12 +20,12 @@ agent0 - agent
 (Neighbour cell1x5 cell1x4)
 (Neighbour cell1x5 cell1x6)
 (GoalAt goal0 cell1x5)
-(Letter goal0 letterc)
+(Letter goal0 letter_c)
 (Free cell1x5)
 (Neighbour cell1x6 cell2x6)
 (Neighbour cell1x6 cell1x5)
 (GoalAt goal1 cell1x6)
-(Letter goal1 letterb)
+(Letter goal1 letter_b)
 (Free cell1x6)
 (Neighbour cell2x1 cell1x1)
 (Neighbour cell2x1 cell3x1)
@@ -34,7 +33,7 @@ agent0 - agent
 (Free cell2x1)
 (Neighbour cell2x2 cell2x1)
 (BoxAt box0 cell2x2)
-(Letter box0 letterAcap)
+(Letter box0 letter_a)
 (Neighbour cell2x4 cell1x4)
 (Neighbour cell2x4 cell2x5)
 (Free cell2x4)
@@ -43,20 +42,20 @@ agent0 - agent
 (Neighbour cell2x5 cell2x4)
 (Neighbour cell2x5 cell2x6)
 (GoalAt goal2 cell2x5)
-(Letter goal2 lettera)
+(Letter goal2 letter_a)
 (Free cell2x5)
 (Neighbour cell2x6 cell1x6)
 (Neighbour cell2x6 cell3x6)
 (Neighbour cell2x6 cell2x5)
 (GoalAt goal3 cell2x6)
-(Letter goal3 letterd)
+(Letter goal3 letter_d)
 (Free cell2x6)
 (Neighbour cell3x1 cell2x1)
 (Neighbour cell3x1 cell4x1)
 (Free cell3x1)
 (Neighbour cell3x3 cell4x3)
 (BoxAt box1 cell3x3)
-(Letter box1 letterBcap)
+(Letter box1 letter_b)
 (Neighbour cell3x5 cell2x5)
 (Neighbour cell3x5 cell3x6)
 (Free cell3x5)
@@ -75,10 +74,10 @@ agent0 - agent
 (Neighbour cell4x3 cell4x2)
 (Neighbour cell4x3 cell4x4)
 (BoxAt box2 cell4x3)
-(Letter box2 letterDcap)
+(Letter box2 letter_d)
 (Neighbour cell4x4 cell4x3)
 (BoxAt box3 cell4x4)
-(Letter box3 letterCcap)
+(Letter box3 letter_c)
 (Neighbour cell4x6 cell3x6)
 (Neighbour cell4x6 cell5x6)
 (Free cell4x6)
@@ -106,9 +105,9 @@ agent0 - agent
 (Neighbour cell6x6 cell5x6)
 (Neighbour cell6x6 cell6x5)
 (Free cell6x6))
-   (:goal (and (BoxAt box3 cell1x5)
-               (BoxAt box0 cell2x5)
-               (BoxAt box1 cell1x6)
-               (BoxAt box2 cell2x6))
-)
+   (:goal
+        (and (forall (?g1 - goal)
+               (exists (?b1 - box ?c - cell ?l - letter)
+                 (and (GoalAt ?g1 ?c) (Letter ?g1 ?l)
+                      (BoxAt ?b1 ?c) (Letter ?b1 ?l))))))
 )

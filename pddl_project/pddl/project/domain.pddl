@@ -3,7 +3,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (domain PROJECT)
-  (:requirements :strips :typing)
+  (:requirements :strips :typing :existential-preconditions :universal-preconditions)
   (:types
     box
     goal
