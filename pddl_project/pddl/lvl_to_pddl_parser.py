@@ -53,13 +53,13 @@ for i, line in enumerate(level):
             if i - 1 >= 0 and level[i - 1][j] != '+':
                 cell2 = CELL_TEMPLATE % (i - 1, j)
                 initials.append(NEIGHBOUR_TEMPLATE % (cell, cell2))
-            if i + 1 < len(level[i]) and level[i + 1][j] != '+':
+            if i + 1 < len(level) and level[i + 1][j] != '+':
                 cell2 = CELL_TEMPLATE % (i + 1, j)
                 initials.append(NEIGHBOUR_TEMPLATE % (cell, cell2))
             if j - 1 >= 0 and level[i][j - 1] != '+':
                 cell2 = CELL_TEMPLATE % (i, j - 1)
                 initials.append(NEIGHBOUR_TEMPLATE % (cell, cell2))
-            if j + 1 < len(level) and level[i][j + 1] != '+':
+            if j + 1 < len(level[i]) and level[i][j + 1] != '+':
                 cell2 = CELL_TEMPLATE % (i, j + 1)
                 initials.append(NEIGHBOUR_TEMPLATE % (cell, cell2))
         else:

@@ -43,5 +43,5 @@
    :effect (and
     (not (AgentAt ?a ?c1)) (AgentAt ?a ?c3)
     (not (BoxAt ?b ?c2)) (BoxAt ?b ?c1)
-    (not (Free ?c3)) (Free ?c1) ))
+    (not (Free ?c3)) (Free ?c2) ))
 )
