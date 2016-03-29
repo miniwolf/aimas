@@ -1,9 +1,13 @@
 package searchclient;
 
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class Heuristic implements Comparator<Node> {
@@ -18,15 +22,22 @@ public abstract class Heuristic implements Comparator<Node> {
         return f(n1) - f(n2);
     }
 
+    private class Position {
+        int x, y;
+        public Position(int x, int y) {
+            this.x = x; this.y = y;
+        }
+    }
+
     public int h(Node n) {
-        Map<searchclient.Position, Character> boxes = n.boxes;
-        Map<searchclient.Position, Character> goals = Node.goals;
+        char[][] boxes = n.boxes;
+        char[][] goals = Node.goals;
         HashMap<Position, Character> goalsChars = new HashMap<>();
         HashMap<Position, Character> boxesChars = new HashMap<>();
         for ( int i = 0; i < Node.MAX_ROW; i++ ) {
             for ( int j = 0; j < Node.MAX_COLUMN; j++ ) {
-                char box = boxes.get(new Position(i, j));
-                char goal = goals.get(new Position(i, j));
+                char box = boxes[i][j];
+                char goal = goals[i][j];
                 if ( Character.isLetter(goal) && Character.isLetter(box) &&
                         Character.toUpperCase(goal) == box ) {
                     continue;
@@ -48,7 +59,7 @@ public abstract class Heuristic implements Comparator<Node> {
             if ( !positions.isEmpty() ) {
                 double bestDistance = Node.MAX_COLUMN + Node.MAX_ROW;
                 for ( Position newPos : positions ) {
-                    double newDistance = Math.sqrt((newPos.getX() - pos.getX()) * (newPos.getX() - pos.getX()) + (newPos.getY() - pos.getY()) * (newPos.getY() - pos.getY()));
+                    double newDistance = Math.sqrt((newPos.x - pos.x) * (newPos.x - pos.x) + (newPos.y - pos.y) * (newPos.y - pos.y));
                     if ( newDistance < bestDistance ) {
                         bestDistance = newDistance;
                     }
@@ -60,14 +71,14 @@ public abstract class Heuristic implements Comparator<Node> {
     }
 
     public int h2(Node n) {
-        Map<Position, Character> boxes = n.boxes;
-        Map<Position, Character> goals = Node.goals;
+        char[][] boxes = n.boxes;
+        char[][] goals = Node.goals;
         HashMap<Position, Character> goalsChars = new HashMap<>();
         HashMap<Position, Character> boxesChars = new HashMap<>();
         for ( int i = 0; i < Node.MAX_ROW; i++ ) {
             for ( int j = 0; j < Node.MAX_COLUMN; j++ ) {
-                char box = boxes.get(new Position(i, j));
-                char goal = goals.get(new Position(i, j));
+                char box = boxes[i][j];
+                char goal = goals[i][j];
                 if ( Character.isLetter(goal) && Character.isLetter(box) &&
                         Character.toUpperCase(goal) == box ) {
                     continue;
@@ -90,7 +101,7 @@ public abstract class Heuristic implements Comparator<Node> {
             double bestDistance = Integer.MAX_VALUE;
             Position bestPosition = null;
             for ( Position newPos : positions ) {
-                double newDistance = Math.sqrt((newPos.getX() - pos.getX()) * (newPos.getX() - pos.getX()) + (newPos.getY() - pos.getY()) * (newPos.getY() - pos.getY()));
+                double newDistance = Math.sqrt((newPos.x - pos.x) * (newPos.x - pos.x) + (newPos.y - pos.y) * (newPos.y - pos.y));
                 if ( newDistance < bestDistance ) {
                     bestDistance = newDistance;
                     bestPosition = newPos;
@@ -99,11 +110,54 @@ public abstract class Heuristic implements Comparator<Node> {
 
             value += bestDistance;
             if ( bestPosition != null ) {
-                value += 2 * Math.sqrt((bestPosition.getX() - n.agentRow) * (bestPosition.getX() - n.agentRow) + (bestPosition.getY() - n.agentCol) * (bestPosition.getY() - n.agentCol));
+                value += 2 * Math.sqrt((bestPosition.x - n.agentRow) * (bestPosition.x - n.agentRow) + (bestPosition.y - n.agentCol) * (bestPosition.y - n.agentCol));
             }
         }
         return (int) value;
     }
+	
+	// Manhattan distance
+	public int h3(Node n) {
+		char[][] boxes = n.boxes;
+        char[][] goals = Node.goals;
+        HashMap<Position, Character> goalsChars = new HashMap<>();
+        HashMap<Position, Character> boxesChars = new HashMap<>();
+        for ( int i = 0; i < Node.MAX_ROW; i++ ) {
+            for ( int j = 0; j < Node.MAX_COLUMN; j++ ) {
+                char box = boxes[i][j];
+                char goal = goals[i][j];
+                if ( Character.isLetter(goal) && Character.isLetter(box) &&
+                        Character.toUpperCase(goal) == box ) {
+                    continue;
+                }
+                if ( Character.isLetter(goal) ) {
+                    goalsChars.put(new Position(i, j), goal);
+                }
+                if ( Character.isLetter(box) ) {
+                    boxesChars.put(new Position(i, j), box);
+                }
+            }
+        }
+		
+		int value = 0;
+        for ( Position pos : boxesChars.keySet() ) {
+            char c = boxesChars.get(pos);
+            char lowerC = Character.toLowerCase(c);
+            List<Position> positions = goalsChars.keySet().stream().filter(index -> goalsChars.get(index) == lowerC)
+                    .collect(Collectors.toList());
+            if ( !positions.isEmpty() ) {
+                double bestDistance = Node.MAX_COLUMN + Node.MAX_ROW;
+                for ( Position newPos : positions ) {
+					double newDistance = Math.abs(newPos.x - pos.x) + Math.abs(newPos.y - pos.y);
+                    if ( newDistance < bestDistance ) {
+                        bestDistance = newDistance;
+                    }
+                }
+                value += bestDistance;
+            }
+        }
+        return value;
+	}
 
     public abstract int f(Node n);
 
@@ -230,4 +284,67 @@ public abstract class Heuristic implements Comparator<Node> {
             return "IDA* evaluation";
         }
     }
+	
+	public static class AStar3 extends Heuristic {
+        public AStar3(Node initialState) {
+            super(initialState);
+        }
+
+        public int f(Node n) {
+            return n.g() + h3(n);
+        }
+
+        public String toString() {
+            return "A3* evaluation";
+        }
+    }
+	
+	public static class WeightedAStar3 extends Heuristic {
+        private int W;
+
+        public WeightedAStar3(Node initialState) {
+            super(initialState);
+            W = 5; // You're welcome to test this out with different values, but for the reporting part you must at least indicate benchmarks for W = 5
+        }
+
+        public int f(Node n) {
+            return n.g() + W * h3(n);
+        }
+
+        public String toString() {
+            return String.format("WA3*(%d) evaluation", W);
+        }
+    }
+
+    public static class Greedy3 extends Heuristic {
+
+        public Greedy3(Node initialState) {
+            super(initialState);
+        }
+
+        public int f(Node n) {
+            return h3(n);
+        }
+
+        public String toString() {
+            return "Greedy3 evaluation";
+        }
+    }
+
+    public static class IDAStar3 extends Heuristic {
+        public IDAStar3(Node initialState) {
+            super(initialState);
+        }
+
+        @Override
+        public int f(Node n) {
+            return n.g() + h3(n);
+        }
+
+        @Override
+        public String toString() {
+            return "IDA3* evaluation";
+        }
+    }
+
 }

@@ -4,25 +4,22 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import searchclient.Heuristic.*;
 import searchclient.Strategy.*;
-import searchclient.Node;
 
 public class SearchClient {
     public Node initialState = null;
 
-    public SearchClient(List<String> lines) throws Exception {
+    public SearchClient(BufferedReader serverMessages) throws Exception {
         Map<Character, String> colors = new HashMap<>();
         String line, color;
 
+        int agentCol = -1, agentRow = -1;
         int colorLines = 0, levelLines = 0;
 
         // Read lines specifying colors
-        int index = 0;
-        while ( (line = lines.get(index)).matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$") ) {
+        while ( (line = serverMessages.readLine()).matches("^[a-z]+:\\s*[0-9A-Z](,\\s*[0-9A-Z])*\\s*$") ) {
             line = line.replaceAll("\\s", "");
             String[] colonSplit = line.split(":");
             color = colonSplit[0].trim();
@@ -31,7 +28,6 @@ public class SearchClient {
                 colors.put(id.trim().charAt(0), color);
             }
             colorLines++;
-            index++;
         }
 
         if ( colorLines > 0 ) {
@@ -40,24 +36,32 @@ public class SearchClient {
 
         initialState = new Node(null);
 
-        for ( int i = index; i < lines.size(); i++ ) {
-            line = lines.get(i);
-            for ( int j = 0; j < line.length(); j++ ) {
-                char chr = line.charAt(j);
+        int lineLength = 0;
+        while ( line != null && !line.equals("") ) {
+            if ( line.length() > lineLength ) {
+                lineLength = line.length();
+            }
+            for ( int i = 0; i < line.length(); i++ ) {
+                char chr = line.charAt(i);
                 if ( '+' == chr ) { // Walls
-                    Node.walls.add(new Position(levelLines, j));
+                    Node.walls[levelLines][i] = true;
                 } else if ( '0' <= chr && chr <= '9' ) { // Agents
+                    if ( agentCol != -1 || agentRow != -1 ) {
+                        error("Not a single agent level");
+                    }
                     initialState.agentRow = levelLines;
-                    initialState.agentCol = j;
+                    initialState.agentCol = i;
                 } else if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
-                    initialState.boxes.put(new Position(levelLines, j), chr);
+                    initialState.boxes[levelLines][i] = chr;
                 } else if ( 'a' <= chr && chr <= 'z' ) { // Goal cells
-                    Node.goals.put(new Position(levelLines, j), chr);
+                    Node.goals[levelLines][i] = chr;
                 }
             }
-
+            line = serverMessages.readLine();
             levelLines++;
         }
+        Node.MAX_COLUMN = lineLength;
+        Node.MAX_ROW = levelLines;
     }
 
     // Auxiliary static classes
@@ -70,29 +74,33 @@ public class SearchClient {
 
         // Use stderr to print to console
         System.err.println("SearchClient initializing. I am sending this using the error output stream.");
-        List<String> lines = new ArrayList<>();
-        String line;
-        while ( !(line = serverMessages.readLine()).equals("") ) {
-            lines.add(line);
-        }
-        Node.MAX_COLUMN = lines.stream().mapToInt(String::length).max().getAsInt();
-        Node.MAX_ROW = lines.size();
-
 
         // Read level and create the initial state of the problem
-        SearchClient client = new SearchClient(lines);
+        SearchClient client = new SearchClient(serverMessages);
 
         Strategy strategy;
-        strategy = new StrategyBFS();
+        //strategy = new StrategyBFS();
         // Ex 1:
         //strategy = new StrategyDFS();
 
         // Ex 3:
-        //strategy = new StrategyBestFirst( new AStar( client.initialState ) );
-        //strategy = new StrategyBestFirst( new WeightedAStar( client.initialState ) );
-        //strategy = new StrategyBestFirst( new Greedy( client.initialState ) );
+        //strategy = new StrategyBestFirst(new AStar(client.initialState));
+        //strategy = new StrategyBestFirst(new WeightedAStar(client.initialState));
+        //strategy = new StrategyBestFirst(new Greedy(client.initialState));
+        //strategy = new StrategyBestFirst(new IDAStar(client.initialState));
+
+        //strategy = new StrategyBestFirst(new AStar2(client.initialState));
+        //strategy = new StrategyBestFirst(new WeightedAStar2(client.initialState));
+        //strategy = new StrategyBestFirst(new Greedy2(client.initialState));
+        //strategy = new StrategyBestFirst(new IDAStar2(client.initialState));
+		
+		//strategy = new StrategyBestFirst(new AStar3(client.initialState));
+        strategy = new StrategyBestFirst(new WeightedAStar3(client.initialState));
+        //strategy = new StrategyBestFirst(new Greedy3(client.initialState));
+        //strategy = new StrategyBestFirst(new IDAStar3(client.initialState));
 
         LinkedList<Node> solution = client.Search(strategy);
+        //LinkedList<Node> solution = client.searchIterative(strategy);
 
         if ( solution == null ) {
             System.err.println("Unable to solve level");
@@ -145,11 +153,69 @@ public class SearchClient {
 
             strategy.addToExplored(leafNode);
             ArrayList<Node> expandedNodes = leafNode.getExpandedNodes();
-            // The list of expanded nodes is shuffled randomly; see Node.java
-            expandedNodes.stream().filter(n -> !strategy.isExplored(n) && !strategy.inFrontier(n)).forEach(strategy::addToFrontier);
+            for ( Node n : expandedNodes ) { // The list of expanded nodes is shuffled randomly; see Node.java
+                if ( !strategy.isExplored(n) && !strategy.inFrontier(n) ) {
+                    strategy.addToFrontier(n);
+                }
+            }
             iterations++;
         }
     }
+
+    public LinkedList<Node> searchIterative(Strategy strategy) throws IOException {
+        System.err.format("Search starting with strategy %s\n", strategy);
+
+        int iterations = 0;
+        Node root = this.initialState;
+        AStar aStar = new AStar(root);
+        int bound = aStar.f(root);
+        while ( true ) {
+            if ( iterations % 200 == 0 ) {
+                System.err.println(strategy.searchStatus());
+            }
+            if ( Memory.shouldEnd() ) {
+                System.err.format("Memory limit almost reached, terminating search %s\n", Memory.stringRep());
+                return null;
+            }
+            if ( strategy.timeSpent() > 300 ) { // Minutes timeout
+                System.err.format("Time limit reached, terminating search %s\n", Memory.stringRep());
+                return null;
+            }
+
+            Node t = search(aStar, root, 0, bound);
+            if ( t.isGoalState() ) {
+                return t.extractPlan();
+            }
+            bound = aStar.f(t);
+            iterations++;
+        }
+    }
+
+    private int cost(Node node, Node succ) {
+        return node.g() - succ.g();
+    }
+
+    public Node search(Heuristic.AStar astar, Node node, int g, int bound) {
+        int f = g + astar.h(node);
+        if ( f > bound || node.isGoalState() ) {
+            return node;
+        }
+
+        Node min = null;
+        //strategy.addToExplored(leafNode);
+        for ( Node succ : node.getExpandedNodes() ) { // The list of expanded nodes is shuffled randomly; see Node.java
+            //strategy.addToFrontier(succ);
+            Node t = search(astar, succ, g + cost(node, succ), bound);
+            if ( t != null && t.isGoalState() ) {
+                return t;
+            }
+            if ( min == null || g + cost(node, succ) + astar.h(t) < g + cost(node, min) + astar.h(min) ) {
+                min = t;
+            }
+        }
+        return min;
+    }
+
 
     public static class Memory {
         public static final float mb = 1024 * 1024;
