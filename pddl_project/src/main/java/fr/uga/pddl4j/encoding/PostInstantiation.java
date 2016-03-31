@@ -549,9 +549,9 @@ final class PostInstantiation {
                         i.remove();
                     }
                 }
-                if (exp.getChildren().size() == 1) {
+                /*if (exp.getChildren().size() == 1) {
                     exp.affect(exp.getChildren().get(0));
-                }
+                }*/
                 break;
             case OR:
                 i = exp.getChildren().iterator();

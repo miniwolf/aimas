@@ -1,9 +1,8 @@
 import java.io.{BufferedReader, InputStreamReader}
 import java.util.Optional
-import java.util.function.{Predicate, ToIntFunction}
+import java.util.function.{Consumer, Predicate, ToIntFunction}
 
-import searchclient.{Node, SearchClient}
-import searchclient.SearchClient.Memory
+import searchclient.{Node, Position, SearchClient}
 
 import scala.util.Random
 
@@ -28,9 +27,8 @@ object LearnClient extends App {
     Node.MAX_ROW = lines.size
     val client: SearchClient = new SearchClient(lines)
 
-    val learnClient = new LearnClient(client)
+    val learnClient = new LearnClient(serverMessages, client)
     val Q = QLearner.learn(learnClient, Map.empty, 0.0f, 10000)
-    println(s"res: ${Memory.stringRep()}")
     val lookup: (QState) => (QAction) => Float = learnClient.lookupFunction(Q)
 
     def findWayOut(currentState: QState, actionsSoFar: List[QAction]): List[QAction] = {
@@ -38,7 +36,7 @@ object LearnClient extends App {
         actionsSoFar
       } else {
         val action = {
-          currentState.actions match {
+          QState.getExpandedActions(currentState.instance) match {
             case Nil => sys.error("No actions available")
             case hd::tl => QLearner.getActionGreedy(lookup, currentState, tl, hd)
           }
@@ -57,17 +55,16 @@ object LearnClient extends App {
   }
 }
 
-class LearnClient(searchClient: SearchClient) extends GameConfiguration {
-  val getActions = searchClient.initialState.getExpandedActions
+class LearnClient(serverMessage: BufferedReader, searchClient: SearchClient) extends GameConfiguration {
   val tRandom = new Random()
-  val startState = QState(searchClient.initialState, 3)
+  val startState = new QState(searchClient.initialState, 3)
 
   override def performAction(state: QState, action: QAction): QState = {
     val resultState: Optional[Node] = state.instance.getExpandedNodes.stream().filter(new Predicate[Node] {
       override def test(t: Node): Boolean = t.action.equals(action.command)
     }).findFirst()
     resultState match {
-      case x if x.isPresent => QState(x.get(), state.reward)
+      case x if x.isPresent => new QState(x.get(), state.reward)
       case _ => sys.error(s"Illegal action taken by learning step at state: ${state.toString}")
     }
   }
@@ -83,8 +80,22 @@ class LearnClient(searchClient: SearchClient) extends GameConfiguration {
   }
 
   override def rewardFunction(state: QState) = {
-    if ( state.actions.size == 1 ) 0.0f
-    else if ( state.isGoal ) 100.0f else 0.0f
+    if ( QState.getExpandedActions(state.instance).size == 1 ) 0.0f
+    else if ( state.isGoal ) 100.0f else boxAtGoals(state)
+  }
+
+  def boxAtGoals(state: QState): Int = {
+    var i = 0
+    Node.goals.keySet().forEach(new Consumer[Position] {
+      override def accept(t: Position): Unit = {
+        val goalC = Node.goals.get(t)
+        val boxC = state.instance.boxes.get(t)
+        if ( boxC != null && goalC == boxC ) {
+          i += 1
+        }
+      }
+    })
+    i
   }
 
   override def alpha: Float = 0.01f // Learning factor
@@ -96,4 +107,6 @@ class LearnClient(searchClient: SearchClient) extends GameConfiguration {
   override def gamma: Float = 0.99f // Discount factor
 
   override def random: Random = tRandom
+
+  override def serverMessages: BufferedReader = serverMessage
 }

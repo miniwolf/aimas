@@ -1,3 +1,5 @@
+import java.io.BufferedReader
+
 import scala.util.Random
 
 /**
@@ -13,4 +15,5 @@ trait GameConfiguration {
   def getStartState: QState
   def alpha: Float
   def gamma: Float
+  def serverMessages: BufferedReader
 }

@@ -66,18 +66,21 @@ public abstract class Heuristic implements Comparator<Node> {
         HashMap<Position, Character> boxesChars = new HashMap<>();
         for ( int i = 0; i < Node.MAX_ROW; i++ ) {
             for ( int j = 0; j < Node.MAX_COLUMN; j++ ) {
-                char box = boxes.get(new Position(i, j));
-                char goal = goals.get(new Position(i, j));
-                if ( Character.isLetter(goal) && Character.isLetter(box) &&
-                        Character.toUpperCase(goal) == box ) {
-                    continue;
+                Character box = boxes.get(new Position(i, j));
+                Character goal = goals.get(new Position(i, j));
+                if ( box != null && goal != null ) {
+                    if ( Character.isLetter(goal) && Character.isLetter(box) &&
+                         Character.toUpperCase(goal) == box ) {
+                        continue;
+                    }
                 }
-                if ( Character.isLetter(goal) ) {
-                    goalsChars.put(new Position(i, j), goal);
-                }
-                if ( Character.isLetter(box) ) {
+                if ( box != null && Character.isLetter(box) ) {
                     boxesChars.put(new Position(i, j), box);
                 }
+                if ( goal != null && Character.isLetter(goal) ) {
+                    goalsChars.put(new Position(i, j), goal);
+                }
+
             }
         }
         double value = 0;

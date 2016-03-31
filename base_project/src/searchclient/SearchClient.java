@@ -45,14 +45,14 @@ public class SearchClient {
             for ( int j = 0; j < line.length(); j++ ) {
                 char chr = line.charAt(j);
                 if ( '+' == chr ) { // Walls
-                    Node.walls.add(new Position(levelLines, j));
+                    Node.walls.add(new Position(j, levelLines));
                 } else if ( '0' <= chr && chr <= '9' ) { // Agents
                     initialState.agentRow = levelLines;
                     initialState.agentCol = j;
                 } else if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
-                    initialState.boxes.put(new Position(levelLines, j), chr);
+                    initialState.boxes.put(new Position(j, levelLines), chr);
                 } else if ( 'a' <= chr && chr <= 'z' ) { // Goal cells
-                    Node.goals.put(new Position(levelLines, j), chr);
+                    Node.goals.put(new Position(j, levelLines), chr);
                 }
             }
 
@@ -83,14 +83,14 @@ public class SearchClient {
         SearchClient client = new SearchClient(lines);
 
         Strategy strategy;
-        strategy = new StrategyBFS();
+        //strategy = new StrategyBFS();
         // Ex 1:
         //strategy = new StrategyDFS();
 
         // Ex 3:
-        //strategy = new StrategyBestFirst( new AStar( client.initialState ) );
-        //strategy = new StrategyBestFirst( new WeightedAStar( client.initialState ) );
-        //strategy = new StrategyBestFirst( new Greedy( client.initialState ) );
+        strategy = new StrategyBestFirst( new AStar2( client.initialState ) );
+        //strategy = new StrategyBestFirst( new WeightedAStar2( client.initialState ) );
+        //strategy = new StrategyBestFirst( new Greedy2( client.initialState ) );
 
         LinkedList<Node> solution = client.Search(strategy);
 

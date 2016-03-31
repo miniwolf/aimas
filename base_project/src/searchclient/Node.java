@@ -19,18 +19,11 @@ public class Node {
     // Row 0: (0,0) (0,1) (0,2) (0,3) ...
     // Row 1: (1,0) (1,1) (1,2) (1,3) ...
     // Row 2: (2,0) (2,1) (2,2) (2,3) ...
-    // ...
-    // (Start in the top left corner, first go down, then go right)
-    // E.g. walls[2] is an array of booleans having size MAX_GRID
-    // walls[row][col] is true if there's a wall at (row, col)
     //
 
     public static List<Position> walls = new ArrayList<>();
-    //public static boolean[][] walls;
     public static Map<Position, Character> goals = new HashMap<>();
-    //public static char[][] goals;
     public Map<Position, Character> boxes = new HashMap<>();
-    //public char[][] boxes = new char[MAX_ROW][MAX_COLUMN];
 
     public Node parent;
     public Command action;
@@ -53,7 +46,7 @@ public class Node {
     public boolean isGoalState() {
         for ( int row = 1; row < MAX_ROW - 1; row++ ) {
             for ( int col = 1; col < MAX_COLUMN - 1; col++ ) {
-                Position pos = new Position(row, col);
+                Position pos = new Position(col, row);
                 Character g = goals.get(pos);
                 Character boxChar = boxes.get(pos);
                 if ( g == null ) {
@@ -80,7 +73,7 @@ public class Node {
 
             if ( c.actType == type.Move ) {
                 // Check if there's a wall or box on the cell to which the agent is moving
-                if ( cellIsFree(newAgentRow, newAgentCol) ) {
+                if ( cellIsFree(newAgentCol, newAgentRow) ) {
                     Node n = this.ChildNode();
                     n.action = c;
                     n.agentRow = newAgentRow;
@@ -89,23 +82,23 @@ public class Node {
                 }
             } else if ( c.actType == type.Push ) {
                 // Make sure that there's actually a box to move
-                if ( boxAt(newAgentRow, newAgentCol) ) {
+                if ( boxAt(newAgentCol, newAgentRow) ) {
                     int newBoxRow = newAgentRow + dirToRowChange(c.dir2);
                     int newBoxCol = newAgentCol + dirToColChange(c.dir2);
                     // .. and that new cell of box is free
-                    if ( cellIsFree(newBoxRow, newBoxCol) ) {
+                    if ( cellIsFree(newBoxCol, newBoxRow) ) {
                         Node n = this.ChildNode();
                         n.action = c;
                         n.agentRow = newAgentRow;
                         n.agentCol = newAgentCol;
-                        n.boxes.put(new Position(newBoxRow, newBoxCol), this.boxes.get(new Position(newAgentRow, newAgentCol)));
-                        n.boxes.remove(new Position(newAgentRow, newAgentCol));
+                        n.boxes.put(new Position(newBoxCol, newBoxRow), this.boxes.get(new Position(newAgentCol, newAgentRow)));
+                        n.boxes.remove(new Position(newAgentCol, newAgentRow));
                         expandedNodes.add(n);
                     }
                 }
             } else if ( c.actType == type.Pull ) {
                 // Cell is free where agent is going
-                if ( cellIsFree(newAgentRow, newAgentCol) ) {
+                if ( cellIsFree(newAgentCol, newAgentRow) ) {
                     int boxRow = this.agentRow + dirToRowChange(c.dir2);
                     int boxCol = this.agentCol + dirToColChange(c.dir2);
                     // .. and there's a box in "dir2" of the agent
@@ -114,8 +107,8 @@ public class Node {
                         n.action = c;
                         n.agentRow = newAgentRow;
                         n.agentCol = newAgentCol;
-                        n.boxes.put(new Position(this.agentRow, this.agentCol), this.boxes.get(new Position(boxRow, boxCol)));
-                        n.boxes.remove(new Position(boxRow, boxCol));
+                        n.boxes.put(new Position(this.agentCol, this.agentRow), this.boxes.get(new Position(boxCol, boxRow)));
+                        n.boxes.remove(new Position(boxCol, boxRow));
                         expandedNodes.add(n);
                     }
                 }
@@ -125,50 +118,13 @@ public class Node {
         return expandedNodes;
     }
 
-    public List<Command> getExpandedActions() {
-        List<Command> expandedNodes = new ArrayList<>(Command.every.length);
-        for ( Command c : Command.every ) {
-            // Determine applicability of action
-            int newAgentRow = this.agentRow + dirToRowChange(c.dir1);
-            int newAgentCol = this.agentCol + dirToColChange(c.dir1);
-
-            if ( c.actType == type.Move ) {
-                // Check if there's a wall or box on the cell to which the agent is moving
-                if ( cellIsFree(newAgentRow, newAgentCol) ) {
-                    expandedNodes.add(c);
-                }
-            } else if ( c.actType == type.Push ) {
-                // Make sure that there's actually a box to move
-                if ( boxAt(newAgentRow, newAgentCol) ) {
-                    int newBoxRow = newAgentRow + dirToRowChange(c.dir2);
-                    int newBoxCol = newAgentCol + dirToColChange(c.dir2);
-                    // .. and that new cell of box is free
-                    if ( cellIsFree(newBoxRow, newBoxCol) ) {
-                        expandedNodes.add(c);
-                    }
-                }
-            } else if ( c.actType == type.Pull ) {
-                // Cell is free where agent is going
-                if ( cellIsFree(newAgentRow, newAgentCol) ) {
-                    int boxRow = this.agentRow + dirToRowChange(c.dir2);
-                    int boxCol = this.agentCol + dirToColChange(c.dir2);
-                    // .. and there's a box in "dir2" of the agent
-                    if ( boxAt(boxRow, boxCol) ) {
-                        expandedNodes.add(c);
-                    }
-                }
-            }
-        }
-        return expandedNodes;
-    }
-
-    private boolean cellIsFree(int row, int col) {
-        Position pos = new Position(row, col);
+    private boolean cellIsFree(int col, int row) {
+        Position pos = new Position(col, row);
         return !Node.walls.contains(pos) && !this.boxes.containsKey(pos);
     }
 
-    private boolean boxAt(int row, int col) {
-        return this.boxes.containsKey(new Position(row, col));
+    private boolean boxAt(int col, int row) {
+        return this.boxes.containsKey(new Position(col, row));
     }
 
     private int dirToRowChange(dir d) {
@@ -179,7 +135,7 @@ public class Node {
         return d == dir.E ? 1 : d == dir.W ? -1 : 0; // East is left one column (1), west is right one column (-1)
     }
 
-    private Node ChildNode() {
+    public Node ChildNode() {
         Node copy = new Node(this);
         //for ( int row = 0; row < MAX_ROW; row++ ) {
             //System.arraycopy(this.walls[row], 0, copy.walls[row], 0, MAX_COLUMN);
@@ -226,11 +182,11 @@ public class Node {
     public String toString() {
         StringBuilder s = new StringBuilder();
         for ( int row = 0; row < MAX_ROW; row++ ) {
-            if ( !walls.contains(new Position(row, 0)) ) {
+            if ( !walls.contains(new Position(0, row)) ) {
                 break;
             }
             for ( int col = 0; col < MAX_COLUMN; col++ ) {
-                Position pos = new Position(row, col);
+                Position pos = new Position(col, row);
                 if ( this.boxes.containsKey(pos) ) {
                     s.append(this.boxes.get(pos));
                 } else if ( goals.containsKey(pos) ) {

@@ -1,7 +1,5 @@
 import java.util.InputMismatchException
 
-import searchclient.SearchClient.Memory
-
 import scala.util.Random
 
 /**
@@ -11,17 +9,16 @@ object QLearner {
   def doAction(performAction: (QState, QAction) => QState, rewardFunction: (QState) => Float, state: QState, action: QAction) = {
     val newState = performAction(state, action)
     val reward = rewardFunction(newState)
-    val resState = QState(newState.instance, reward)
-    (resState, state.actions)
+    new QState(newState.instance, reward)
   }
 
   def doLearningStep(alpha: Float, gamma: Float, lookup: QState => QAction => Float,
                      isDone: Boolean, previousState: QState, previousAction: QAction,
-                     currentState: QState, currentAction: QAction): (QState, QAction, Float) = {
+                     currentState: QState, currentAction: QAction): Float = {
     val qsa: Float = lookup(previousState)(previousAction)
     val qsap = if ( isDone ) 0.0f else lookup(currentState)(currentAction)
     val newQsa = qsa + alpha * (currentState.reward + gamma * qsap - qsa)
-    (previousState, previousAction, newQsa)
+    newQsa
   }
 
   def getActionGreedy(lookup: QState => QAction => Float, currentState: QState, actions: List[QAction], bestActionSoFar: QAction): QAction = {
@@ -44,13 +41,13 @@ object QLearner {
     }
   }
 
-  def getActionEGreedy(random: Random, lookup: QState => QAction => Float, actions: List[QAction], epsilon: Float, currentState: QState): Option[QAction] = {
-    actions match {
+  def getActionEGreedy(random: Random, lookup: QState => QAction => Float, epsilon: Float, currentState: QState): Option[QAction] = {
+    QState.getExpandedActions(currentState.instance) match {
       case Nil => None
       case car :: cdr =>
         random.nextDouble() match {
           case x if x > epsilon => Some(getActionGreedy(lookup, currentState, cdr, car))
-          case _ => getRandomAction(random, actions)
+          case _ => getRandomAction(random, car :: cdr)
         }
     }
   }
@@ -59,19 +56,22 @@ object QLearner {
     val isDone = currentState.isGoal
     val lookup: QState => QAction => Float = gc.lookupFunction(Q)
     val action = {
-      val foundAction = getActionEGreedy(gc.random, lookup, currentState.actions, epsilon, currentState)
+      val foundAction = getActionEGreedy(gc.random, lookup, epsilon, currentState)
       foundAction match {
         case None => gc.neutralAction
         case Some(x) => x
       }
     }
-    val (_, newQ) = {
+    val act = action.command.toActionString
+    println(act)
+    val response: String = gc.serverMessages.readLine
+    val newQ = {
       history match {
-        case List() => (0.0f, Q.+((currentState, action) -> 0.0f))
+        case List() => Q
         case (prevState, prevAction)::tl =>
-          val (_,_, re) = doLearningStep(gc.alpha, gc.gamma, lookup, isDone, prevState, prevAction, currentState, action)
-          val nq = Q.+((prevState, prevAction) -> re)
-          (re, nq)
+          val re = doLearningStep(gc.alpha, gc.gamma, lookup, isDone, prevState, prevAction, currentState, action)
+          if ( re == 0.0f ) Q
+          else Q.+((prevState, prevAction) -> re)
       }
     }
 
@@ -79,7 +79,7 @@ object QLearner {
       newQ
     } else {
       val newHistory = (currentState, action) :: history
-      val (newState, _) = doAction(gc.performAction, gc.rewardFunction, currentState, action)
+      val newState = doAction(gc.performAction, gc.rewardFunction, currentState, action)
       playOneRound(gc, newQ, epsilon, newHistory, newState)
     }
   }
@@ -92,9 +92,6 @@ object QLearner {
         val newCounter = counter + 1.0f
         val epsilon = gc calcEpsilon newCounter
         val newQ = playOneRound(gc, Q, epsilon, List(), startState)
-        if ( roundsLeft % 200 == 0 ) {
-          println(s"rounds left: $roundsLeft - ${Memory.stringRep()}")
-        }
         learn(gc, newQ, newCounter, roundsLeft - 1)
       case _ => throw new InputMismatchException("Cannot handle negative rounds left")
     }
