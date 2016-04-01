@@ -1,11 +1,9 @@
 package searchclient;
 
-import java.util.*;
-
 import searchclient.Command.dir;
 import searchclient.Command.type;
 
-import javax.swing.*;
+import java.util.*;
 
 public class Node {
     private static Random rnd = new Random(1);
@@ -23,7 +21,7 @@ public class Node {
 
     public static List<Position> walls = new ArrayList<>();
     public static Map<Position, Character> goals = new HashMap<>();
-    public Map<Position, Character> boxes = new HashMap<>();
+    public List<Box> boxes = new ArrayList<>();
 
     public Node parent;
     public Command action;
@@ -48,15 +46,17 @@ public class Node {
             for ( int col = 1; col < MAX_COLUMN - 1; col++ ) {
                 Position pos = new Position(col, row);
                 Character g = goals.get(pos);
-                Character boxChar = boxes.get(pos);
+                Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
+                Character boxChar;
+                if ( b.isPresent() ) {
+                    boxChar = b.get().getCharacter();
+                } else {
+                    return false;
+                }
                 if ( g == null ) {
                     continue;
                 }
-                if ( boxChar == null ) {
-                    return false;
-                }
-                char b = Character.toLowerCase(boxChar);
-                if ( g > 0 && b != g ) {
+                if ( g > 0 && Character.toLowerCase(boxChar) != g ) {
                     return false;
                 }
             }
@@ -91,8 +91,11 @@ public class Node {
                         n.action = c;
                         n.agentRow = newAgentRow;
                         n.agentCol = newAgentCol;
-                        n.boxes.put(new Position(newBoxCol, newBoxRow), this.boxes.get(new Position(newAgentCol, newAgentRow)));
-                        n.boxes.remove(new Position(newAgentCol, newAgentRow));
+                        Position pos = new Position(newAgentCol, newAgentRow);
+                        Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
+                        if ( b.isPresent() ) {
+                            b.get().setPosition(new Position(newBoxCol, newBoxRow));
+                        }
                         expandedNodes.add(n);
                     }
                 }
@@ -102,13 +105,16 @@ public class Node {
                     int boxRow = this.agentRow + dirToRowChange(c.dir2);
                     int boxCol = this.agentCol + dirToColChange(c.dir2);
                     // .. and there's a box in "dir2" of the agent
-                    if ( boxAt(boxRow, boxCol) ) {
+                    if ( boxAt(boxCol, boxRow) ) {
                         Node n = this.ChildNode();
                         n.action = c;
                         n.agentRow = newAgentRow;
                         n.agentCol = newAgentCol;
-                        n.boxes.put(new Position(this.agentCol, this.agentRow), this.boxes.get(new Position(boxCol, boxRow)));
-                        n.boxes.remove(new Position(boxCol, boxRow));
+                        Position pos = new Position(boxCol, boxRow);
+                        Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
+                        if ( b.isPresent() ) {
+                            b.get().setPosition(new Position(agentCol, agentRow));
+                        }
                         expandedNodes.add(n);
                     }
                 }
@@ -120,11 +126,12 @@ public class Node {
 
     private boolean cellIsFree(int col, int row) {
         Position pos = new Position(col, row);
-        return !Node.walls.contains(pos) && !this.boxes.containsKey(pos);
+        return !Node.walls.contains(pos) && !(this.boxes.stream().filter(box -> box.getPosition().equals(pos)).count() == 1);
     }
 
     private boolean boxAt(int col, int row) {
-        return this.boxes.containsKey(new Position(col, row));
+        Position pos = new Position(col, row);
+        return this.boxes.stream().filter(box -> box.getPosition().equals(pos)).count() == 1;
     }
 
     private int dirToRowChange(dir d) {
@@ -139,7 +146,7 @@ public class Node {
         Node copy = new Node(this);
         //for ( int row = 0; row < MAX_ROW; row++ ) {
             //System.arraycopy(this.walls[row], 0, copy.walls[row], 0, MAX_COLUMN);
-        copy.boxes = (HashMap<Position, Character>) ((HashMap) this.boxes).clone();
+        copy.boxes = (ArrayList<Box>) ((ArrayList<Box>) this.boxes).clone();
             //System.arraycopy(this.goals[row], 0, copy.goals[row], 0, MAX_COLUMN);
         //}
         return copy;
@@ -187,8 +194,9 @@ public class Node {
             }
             for ( int col = 0; col < MAX_COLUMN; col++ ) {
                 Position pos = new Position(col, row);
-                if ( this.boxes.containsKey(pos) ) {
-                    s.append(this.boxes.get(pos));
+                Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
+                if ( b.isPresent() ) {
+                    s.append(b.get().getCharacter());
                 } else if ( goals.containsKey(pos) ) {
                     s.append(goals.get(pos));
                 } else if ( walls.contains(pos) ) {

@@ -1,13 +1,9 @@
 package searchclient;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class Heuristic implements Comparator<Node> {
-
     public Node initialState;
 
     public Heuristic(Node initialState) {
@@ -19,23 +15,27 @@ public abstract class Heuristic implements Comparator<Node> {
     }
 
     public int h(Node n) {
-        Map<searchclient.Position, Character> boxes = n.boxes;
+        List<Box> boxes = n.boxes;
         Map<searchclient.Position, Character> goals = Node.goals;
         HashMap<Position, Character> goalsChars = new HashMap<>();
         HashMap<Position, Character> boxesChars = new HashMap<>();
-        for ( int i = 0; i < Node.MAX_ROW; i++ ) {
-            for ( int j = 0; j < Node.MAX_COLUMN; j++ ) {
-                char box = boxes.get(new Position(i, j));
-                char goal = goals.get(new Position(i, j));
-                if ( Character.isLetter(goal) && Character.isLetter(box) &&
-                        Character.toUpperCase(goal) == box ) {
-                    continue;
+        for ( int i = 1; i < Node.MAX_ROW; i++ ) {
+            for ( int j = 1; j < Node.MAX_COLUMN; j++ ) {
+                Position pos = new Position(i, j);
+                Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
+                Character boxChar = b.isPresent() ? b.get().getCharacter() : null;
+                Character goal = goals.get(pos);
+                if ( boxChar != null && goal != null ) {
+                    if ( Character.isLetter(goal) && Character.isLetter(boxChar) &&
+                         Character.toUpperCase(goal) == boxChar ) {
+                        continue;
+                    }
                 }
-                if ( Character.isLetter(goal) ) {
-                    goalsChars.put(new Position(i, j), goal);
+                if ( boxChar != null && Character.isLetter(boxChar) ) {
+                    boxesChars.put(pos, boxChar);
                 }
-                if ( Character.isLetter(box) ) {
-                    boxesChars.put(new Position(i, j), box);
+                if ( goal != null && Character.isLetter(goal) ) {
+                    goalsChars.put(pos, goal);
                 }
             }
         }
@@ -60,25 +60,27 @@ public abstract class Heuristic implements Comparator<Node> {
     }
 
     public int h2(Node n) {
-        Map<Position, Character> boxes = n.boxes;
+        List<Box> boxes = n.boxes;
         Map<Position, Character> goals = Node.goals;
         HashMap<Position, Character> goalsChars = new HashMap<>();
         HashMap<Position, Character> boxesChars = new HashMap<>();
         for ( int i = 0; i < Node.MAX_ROW; i++ ) {
             for ( int j = 0; j < Node.MAX_COLUMN; j++ ) {
-                Character box = boxes.get(new Position(i, j));
-                Character goal = goals.get(new Position(i, j));
-                if ( box != null && goal != null ) {
-                    if ( Character.isLetter(goal) && Character.isLetter(box) &&
-                         Character.toUpperCase(goal) == box ) {
+                Position pos = new Position(i, j);
+                Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
+                Character boxChar = b.isPresent() ? b.get().getCharacter() : null;
+                Character goal = goals.get(pos);
+                if ( boxChar != null && goal != null ) {
+                    if ( Character.isLetter(goal) && Character.isLetter(boxChar) &&
+                         Character.toUpperCase(goal) == boxChar ) {
                         continue;
                     }
                 }
-                if ( box != null && Character.isLetter(box) ) {
-                    boxesChars.put(new Position(i, j), box);
+                if ( boxChar != null && Character.isLetter(boxChar) ) {
+                    boxesChars.put(pos, boxChar);
                 }
                 if ( goal != null && Character.isLetter(goal) ) {
-                    goalsChars.put(new Position(i, j), goal);
+                    goalsChars.put(pos, goal);
                 }
 
             }

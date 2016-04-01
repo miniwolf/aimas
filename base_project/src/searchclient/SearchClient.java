@@ -50,7 +50,7 @@ public class SearchClient {
                     initialState.agentRow = levelLines;
                     initialState.agentCol = j;
                 } else if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
-                    initialState.boxes.put(new Position(j, levelLines), chr);
+                    initialState.boxes.add(new Box(new Position(j, levelLines), chr));
                 } else if ( 'a' <= chr && chr <= 'z' ) { // Goal cells
                     Node.goals.put(new Position(j, levelLines), chr);
                 }
