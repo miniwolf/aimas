@@ -5,6 +5,7 @@ import Strategy.AdvancedStrategy
 import searchclient._
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 /**
   * Created by miniwolf on 29-03-2016.
@@ -70,29 +71,56 @@ object LearnClient extends App {
     val learnClient = new LearnClient(client)
     val (_, edges) = Graph.construct(learnClient.emptyStartState)
     val goalMatches: Map[Position, Int] = matchGoalsWithBoxes(learnClient.startState, edges)
-    val goalList: List[Position] = Node.goals.map { case (goalPos, _) => goalPos }.toList
+    val goalList: mutable.Map[Position, Character] = Node.goals.map { case (goalPos, goalChar) => goalPos->goalChar }
     val solutionLength: Map[Position, Int] = findSolutionLengths(goalMatches, learnClient.startState)
-    val solvedGoals = List[Position]()
 
-    val solution: List[Node] = findSolution(goalList, goalMatches, List(), solutionLength, List(),
+    val solution: List[Node] = findSolution(goalList.keys.toList, goalMatches, List(), solutionLength, List(),
                                             List(), learnClient.startState)
 
-    solvedGoals.foreach(goalPos => Node.walls.remove(goalPos))
-    QClient.useInitialPath(client, serverMessages, solution)
+    Node.walls.removeAll(goalList.keys.toList)
+    goalList.foreach { case (goalPos, goalChar) => Node.goals.put(goalPos, goalChar) }
+    solution.foreach { case n: Node =>
+      val act = n.action.toActionString
+      println(act)
+      val response: String = serverMessages.readLine
+      if ( response.contains("false") ) {
+        System.err.println(s"Server responded with $response to the inapplicable action: $act\n")
+        System.err.format(s"$act was attempted in \n")
+        return
+      }
+    }
+    //QClient.useInitialPath(client, serverMessages, solution)
+  }
+
+  def findDangerousPositions(vertices: List[Position], goalPos: Position, safeSpot: Position, empty: Node) = {
+    Node.walls.add(goalPos)
+    empty.getAgent.setPosition(safeSpot)
+    val (newVertices, _) = Graph.construct(empty)
+    val diff = vertices.diff(newVertices)
+    Node.walls.remove(goalPos)
+    diff.filter(p => !p.equals(goalPos))
   }
 
   def findSolution(goals: List[Position], goalMatch: Map[Position, Int], solution: List[Node],
                    solutionLength: Map[Position, Int], solvedGoals: List[Position],
                    unableToSolve: List[Position], node: Node): List[Node] = {
+    if ( goals.isEmpty ) {
+      return solution
+    }
     val dependencies = getGoalDependencies(goals, goalMatch, node)
     findGoal(dependencies, solutionLength) match {
-      case null => solution
       case goalPos =>
         val emptyState = new Node(node.parent)
-        emptyState.setAgent(node.getAgent)
-        val (_, edges) = Graph.construct(emptyState)
+        emptyState.setAgent(new Agent(node.getAgent.getPosition, node.getAgent.getId))
+        val (vertices, edges) = Graph.construct(emptyState)
         val newGoals = goals.filter(goal => !goal.equals(goalPos))
-        solveReduced(goals, goalPos, goalMatch, node, edges) match {
+        val dangerZone = if ( goalMatch.size != 1 ) {
+          val safeBox = node.boxes.filter(box => goalMatch(goalPos) != box.getId && goalMatch.values.contains(box.getId)).last
+          findDangerousPositions(vertices, goalPos, safeBox.getPosition, emptyState)
+        } else {
+          List()
+        }
+        solveReduced(goalPos, goalMatch, dangerZone, solvedGoals, node, edges) match {
           case null =>
             sys.error("Cannot find solution, issue issue!")
           case newSolution if canReachAllRemainingBoxes(goalPos :: solvedGoals, newSolution.getLast) =>
@@ -105,8 +133,6 @@ object LearnClient extends App {
             newNode.parent = null
             Node.walls.add(goalPos)
             Node.goals.remove(goalPos)
-            newNode.boxes.filter(box => box.getPosition.equals(goalPos))
-              .foreach(box => box.setMovable(false))
 
             val newGoalMatches = goalMatch.filter { case (pos,_) => !pos.equals(goalPos) }
             val newSolutionLengths = solutionLength.filter(length => !length._1.equals(goalPos))
@@ -119,11 +145,13 @@ object LearnClient extends App {
     }
   }
 
-  def solveReduced(goalList: List[Position], goal: Position, goalMatch: Map[Position, Int],
-                   node: Node, edges: Map[Position, List[Position]]) = {
-    val goals = goalList.filter(g => !g.equals(goal))
-    val savedGoals = goals.map(goalPos => goalPos -> Node.goals.remove(goalPos))
+  def solveReduced(goal: Position, goalMatch: Map[Position, Int], dangerZone: List[Position],
+                   solved: List[Position], node: Node, edges: Map[Position, List[Position]]) = {
+    Node.walls.addAll(dangerZone)
+    val savedGoals = Node.goals.filter { case (goalPos, goalChar) => !goal.equals(goalPos) }
+    savedGoals.foreach { case (goalPos, _) => Node.goals.remove(goalPos) }
     val agentPos = node.getAgent.getPosition
+    val solvedBoxes = goalMatch.filter(p => solved.contains(p._1)).values
     if ( node.boxes.length != 1 ) {
       val boxId = goalMatch.get(goal).get
       val boxPos = node.boxes.filter(box => box.getId == boxId).last.getPosition
@@ -133,11 +161,14 @@ object LearnClient extends App {
                                && !agentPath.contains(box.getPosition)
                                && box.getId != boxId)
                 .foreach(box => box.setMovable(false))
+      node.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
     }
 
     val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(goalMatch, edges))
     val solution = Search.search(strategy, node)
-    savedGoals.foreach{ case (goalPos,goalChar) => Node.goals.put(goalPos, goalChar) }
+    savedGoals.foreach { case (goalPos,goalChar) => Node.goals.put(goalPos, goalChar) }
+    node.boxes.foreach(box => box.setMovable(true))
+    Node.walls.removeAll(dangerZone)
     solution
   }
 
@@ -174,11 +205,11 @@ object LearnClient extends App {
   def getGoalDependencies(permutations: List[Position], goalMatch: Map[Position, Int],
                           initialState: Node): Map[Position, List[Position]] = {
     def calcDependency(goalDependencies: Map[Position, List[Position]],
-                       permutations: List[Position]): Map[Position, List[Position]] = {
-      permutations match {
+                       goals: List[Position]): Map[Position, List[Position]] = {
+      goals match {
         case Nil => goalDependencies
         case car :: cdr =>
-          val dependencies: List[Position] = getGoalDependency(car, goalMatch, initialState)
+          val dependencies: List[Position] = getGoalDependency(car, permutations, goalMatch, initialState)
           calcDependency(goalDependencies + (car -> dependencies), cdr)
       }
     }
@@ -189,7 +220,7 @@ object LearnClient extends App {
     }
   }
 
-  def getGoalDependency(permutation: Position, goalMatch: Map[Position, Int], initialState: Node): List[Position] = {
+  def getGoalDependency(permutation: Position, goals: List[Position], goalMatch: Map[Position, Int], initialState: Node): List[Position] = {
     Node.walls.add(permutation)
     val emptyStartState = new Node(initialState.parent)
     emptyStartState.setAgent(initialState.getAgent)
@@ -201,13 +232,12 @@ object LearnClient extends App {
         case car :: cdr =>
           Astar.search(edges, car,
             initialState.boxes.find(box => box.getId == goalMatch(car)).get.getPosition) match {
-            case null => findDependencies(car :: dependencies, cdr)
+            case null | Nil => findDependencies(car :: dependencies, cdr)
             case _ => findDependencies(dependencies, cdr)
           }
       }
     }
-    val goals = Node.goals.filter(goal => !goal._1.equals(permutation)).keys.toList
-    val dependencies = findDependencies(List(), goals)
+    val dependencies = findDependencies(List(), goals.filter(goal => !goal.equals(permutation)))
 
     Node.walls.remove(permutation)
     dependencies

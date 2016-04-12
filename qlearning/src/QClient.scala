@@ -82,7 +82,7 @@ object QClient extends App {
     Q += ((current, currentAction) -> 100)
     iterate(current, currentAction, isDone = true, reward = 100)
 
-    Q = QLearner.learn(gc, Q, 0, 10000)
+    Q = QLearner.learn(gc, Q, 0, 4)
 
     def findWayOut(currentState: QState, actionsSoFar: List[QAction]): List[QAction] = {
       if ( currentState.isGoal ) {
@@ -147,16 +147,17 @@ class QClient(serverMessage: BufferedReader, searchClient: SearchClient) extends
     Node.goals.keySet().forEach(new Consumer[Position] {
       override def accept(t: Position): Unit = {
         val goalC = Node.goals.get(t)
-        val b: Box = state.instance.boxes.filter(box => box.getPosition.equals(t)).head
-        if ( b != null && goalC == Character.toLowerCase(b.getCharacter) ) {
-          i += 1
+        val boxes: List[Box] = state.instance.boxes.filter(box => box.getPosition.equals(t)).toList
+        boxes match {
+          case (car: Box) :: cdr if goalC == Character.toLowerCase(car.getCharacter) => i += 1
+          case _ => i = i
         }
       }
     })
     i
   }
 
-  override def alpha: Float = 0.1f // Learning factor
+  override def alpha: Float = 0.01f // Learning factor
 
   override def calcEpsilon(x: Float): Float = -0.0001f * x + 1.0f
 

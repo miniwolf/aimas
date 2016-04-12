@@ -17,7 +17,7 @@ public class Node {
     // Row 2: (2,0) (2,1) (2,2) (2,3) ...
     //
 
-    public static List<Position> walls = new ArrayList<>();
+    public static Set<Position> walls = new HashSet<>();
     public static Map<Position, Character> goals = new HashMap<>();
     public List<Box> boxes = new ArrayList<>();
 
@@ -159,8 +159,8 @@ public class Node {
         LinkedList<Node> plan = new LinkedList<>();
         Node n = this;
         while ( !n.isInitialState() ) {
-            plan.addFirst(n);
             n.boxes.forEach(box -> box.setMovable(true));
+            plan.addFirst(n);
             n = n.parent;
         }
         return plan;
@@ -205,18 +205,15 @@ public class Node {
             s.append(action.toActionString()).append("\n");
         }
         for ( int row = 0; row < MAX_ROW; row++ ) {
-            /*if ( !walls.contains(new Position(0, row)) ) {
-                break;
-            }*/
             for ( int col = 0; col < MAX_COLUMN; col++ ) {
                 Position pos = new Position(col, row);
                 Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
-                if ( b.isPresent() ) {
+                if ( walls.contains(pos) ) {
+                    s.append("+");
+                } else if ( b.isPresent() ) {
                     s.append(b.get().getCharacter());
                 } else if ( goals.containsKey(pos) ) {
                     s.append(goals.get(pos));
-                } else if ( walls.contains(pos) ) {
-                    s.append("+");
                 } else if ( agent.getPosition().equals(pos) ) {
                     s.append("0");
                 } else {
