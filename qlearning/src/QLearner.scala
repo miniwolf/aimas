@@ -55,24 +55,16 @@ object QLearner {
   def playOneRound(gc: GameConfiguration, Q: Map[(QState, QAction), Float], epsilon: Float, history: List[(QState, QAction)], currentState: QState): Map[(QState, QAction), Float] = {
     val isDone = currentState.isGoal
     val lookup: QState => QAction => Float = gc.lookupFunction(Q)
-    val action = {
-      val foundAction = getActionEGreedy(gc.random, lookup, epsilon, currentState)
-      foundAction match {
-        case None => gc.neutralAction
-        case Some(x) => x
-      }
+    val action = getActionEGreedy(gc.random, lookup, epsilon, currentState) match {
+      case None => gc.neutralAction
+      case Some(x) => x
     }
-    val act = action.command.toActionString
-    println(act)
-    val response: String = gc.serverMessages.readLine
-    val newQ = {
-      history match {
-        case List() => Q
-        case (prevState, prevAction)::tl =>
-          val re = doLearningStep(gc.alpha, gc.gamma, lookup, isDone, prevState, prevAction, currentState, action)
-          if ( re == 0.0f ) Q
-          else Q.+((prevState, prevAction) -> re)
-      }
+    val newQ = history match {
+      case List() => Q
+      case (prevState, prevAction)::tl =>
+        val re = doLearningStep(gc.alpha, gc.gamma, lookup, isDone, prevState, prevAction, currentState, action)
+        if ( re == 0.0f ) Q
+        else Q.+((prevState, prevAction) -> re)
     }
 
     if ( isDone ) {
@@ -84,12 +76,12 @@ object QLearner {
     }
   }
 
-  def learn(gc: GameConfiguration, Q: Map[(QState, QAction), Float], counter: Float, roundsLeft: Int): Map[(QState, QAction), Float] = {
+  def learn(gc: GameConfiguration, Q: Map[(QState, QAction), Float], counter: Int, roundsLeft: Int): Map[(QState, QAction), Float] = {
     roundsLeft match {
       case 0 => Q
       case x if x > 0 =>
         val startState: QState = gc.getStartState
-        val newCounter = counter + 1.0f
+        val newCounter = counter + 1
         val epsilon = gc calcEpsilon newCounter
         val newQ = playOneRound(gc, Q, epsilon, List(), startState)
         learn(gc, newQ, newCounter, roundsLeft - 1)

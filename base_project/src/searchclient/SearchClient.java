@@ -4,12 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import searchclient.Heuristic.*;
 import searchclient.Strategy.*;
-import searchclient.Node;
 
 public class SearchClient {
     public Node initialState = null;
@@ -39,20 +36,21 @@ public class SearchClient {
         }
 
         initialState = new Node(null);
-
+        int id = 0;
         for ( int i = index; i < lines.size(); i++ ) {
             line = lines.get(i);
             for ( int j = 0; j < line.length(); j++ ) {
                 char chr = line.charAt(j);
+                Position pos = new Position(j, levelLines);
                 if ( '+' == chr ) { // Walls
-                    Node.walls.add(new Position(j, levelLines));
+                    Node.walls.add(pos);
                 } else if ( '0' <= chr && chr <= '9' ) { // Agents
-                    initialState.agentRow = levelLines;
-                    initialState.agentCol = j;
+                    initialState.setAgent(new Agent(pos, 0)); // TODO: Does not support MA
                 } else if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
-                    initialState.boxes.add(new Box(new Position(j, levelLines), chr));
+                    initialState.boxes.add(new Box(pos, chr, id));
+                    id++;
                 } else if ( 'a' <= chr && chr <= 'z' ) { // Goal cells
-                    Node.goals.put(new Position(j, levelLines), chr);
+                    Node.goals.put(pos, chr);
                 }
             }
 

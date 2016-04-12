@@ -104,7 +104,10 @@ public abstract class Heuristic implements Comparator<Node> {
 
             value += bestDistance;
             if ( bestPosition != null ) {
-                value += 2 * Math.sqrt((bestPosition.getX() - n.agentRow) * (bestPosition.getX() - n.agentRow) + (bestPosition.getY() - n.agentCol) * (bestPosition.getY() - n.agentCol));
+                value += 2 * Math.sqrt((bestPosition.getX() - n.getAgent().getPosition().getX()) *
+                                       (bestPosition.getX() - n.getAgent().getPosition().getX()) +
+                                       (bestPosition.getY() - n.getAgent().getPosition().getY()) *
+                                       (bestPosition.getY() - n.getAgent().getPosition().getY()));
             }
         }
         return (int) value;

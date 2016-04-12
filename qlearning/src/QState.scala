@@ -1,6 +1,7 @@
 import searchclient.Command.dir
 import searchclient.{Command, Node, Position}
 
+import scala.collection.JavaConversions._
 /**
   * @author miniwolf
   */
@@ -19,16 +20,14 @@ class QState(val instance: Node, val reward: Float) {
     case that: QState =>
       if ( !(that canEqual this) ) return false
       val otherNode: Node = that.instance
-      instance.agentCol == otherNode.agentCol && instance.agentRow == otherNode.agentRow &&
-      instance.boxes.equals(otherNode.boxes)
+      instance.getAgent.equals(otherNode.getAgent) && instance.boxes.equals(otherNode.boxes)
     case _ => false
   }
 
   override def hashCode(): Int = {
     val prime: Int = 31
     var result: Int = 1
-    result = prime * result + instance.agentCol
-    result = prime * result + instance.agentRow
+    result = prime * result + instance.getAgent.hashCode
     result = prime * result + instance.boxes.hashCode
     result
   }
@@ -38,8 +37,8 @@ object QState {
   def getExpandedActions(node: Node): List[QAction] = {
     var expandedNodes: List[QAction] = List[QAction]()
     Command.every.foreach { case c =>
-      val newAgentRow: Int = node.agentRow + dirToRowChange(c.dir1)
-      val newAgentCol: Int = node.agentCol + dirToColChange(c.dir1)
+      val newAgentRow: Int = node.getAgent.getPosition.getY + dirToRowChange(c.dir1)
+      val newAgentCol: Int = node.getAgent.getPosition.getX + dirToColChange(c.dir1)
       if ( c.actType eq Command.`type`.Move ) {
         if ( cellIsFree(node, newAgentRow, newAgentCol) ) {
           expandedNodes +:= QAction(c)
@@ -56,8 +55,8 @@ object QState {
       }
       else if ( c.actType eq Command.`type`.Pull ) {
         if ( cellIsFree(node, newAgentRow, newAgentCol) ) {
-          val boxRow: Int = node.agentRow + dirToRowChange(c.dir2)
-          val boxCol: Int = node.agentCol + dirToColChange(c.dir2)
+          val boxRow: Int = node.getAgent.getPosition.getY + dirToRowChange(c.dir2)
+          val boxCol: Int = node.getAgent.getPosition.getX + dirToColChange(c.dir2)
           if ( boxAt(node, boxRow, boxCol) ) {
             expandedNodes +:= QAction(c)
           }
@@ -68,12 +67,12 @@ object QState {
   }
 
   private def boxAt(node: Node,row: Int, col: Int): Boolean = {
-    node.boxes.containsKey(new Position(row, col))
+    node.boxes.exists(box => box.getPosition.equals(new Position(row, col)))
   }
 
   private def cellIsFree(node: Node, row: Int, col: Int): Boolean = {
     val pos: Position = new Position(row, col)
-    !Node.walls.contains(pos) && !node.boxes.containsKey(pos)
+    !Node.walls.contains(pos) && !boxAt(node, row, col)
   }
 
   private def dirToRowChange(d: Command.dir): Int = {
