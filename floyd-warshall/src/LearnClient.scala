@@ -2,6 +2,7 @@ import java.io.{BufferedReader, InputStreamReader}
 import java.util.function.ToIntFunction
 
 import Strategy.AdvancedStrategy
+import searchclient.SearchClient.Memory
 import searchclient._
 
 import scala.collection.JavaConversions._
@@ -11,11 +12,10 @@ import scala.collection.mutable
   * Created by miniwolf on 29-03-2016.
   */
 object LearnClient extends App {
-  def canReachAllRemainingBoxes(goalPoses: List[Position], node: Node): Boolean = {
-    goalPoses.foreach { case goalPos =>
-      Node.walls.add(goalPos)
-      node.boxes.filter(box => box.getPosition.equals(goalPos)).last.setMovable(false)
-    }
+  def canReachAllRemainingBoxes(goalPos: Position, solvedGoals: List[Position], node: Node): Boolean = {
+    Node.walls.add(goalPos)
+    (goalPos :: solvedGoals).foreach(goal =>
+      node.boxes.filter(box => box.getPosition.equals(goal)).last.setMovable(false))
 
     val emptyState = new Node(node.parent)
     emptyState.setAgent(node.getAgent)
@@ -25,10 +25,9 @@ object LearnClient extends App {
       case list => !list.exists(box => Astar.search(edges, node.getAgent.getPosition, box.getPosition).isEmpty)
     }
 
-    goalPoses.foreach { case goalPos =>
-      Node.walls.remove(goalPos)
-      node.boxes.filter(box => box.getPosition.equals(goalPos)).last.setMovable(true)
-    }
+    Node.walls.remove(goalPos)
+    (goalPos :: solvedGoals).foreach(goal =>
+      node.boxes.filter(box => box.getPosition.equals(goal)).last.setMovable(true))
     res
   }
 
@@ -67,7 +66,7 @@ object LearnClient extends App {
     }).max.getAsInt
     Node.MAX_ROW = lines.size
     val client: SearchClient = new SearchClient(lines)
-
+    val startTime = System.currentTimeMillis()
     val learnClient = new LearnClient(client)
     val (_, edges) = Graph.construct(learnClient.emptyStartState)
     val goalMatches: Map[Position, Int] = matchGoalsWithBoxes(learnClient.startState, edges)
@@ -76,7 +75,8 @@ object LearnClient extends App {
 
     val solution: List[Node] = findSolution(goalList.keys.toList, goalMatches, List(), solutionLength, List(),
                                             List(), learnClient.startState)
-
+    val timeSpent = (System.currentTimeMillis - startTime) / 1000f
+    System.err.println(s"Summary: Time: $timeSpent\t ${Memory.stringRep()}")
     Node.walls.removeAll(goalList.keys.toList)
     goalList.foreach { case (goalPos, goalChar) => Node.goals.put(goalPos, goalChar) }
     solution.foreach { case n: Node =>
@@ -92,11 +92,15 @@ object LearnClient extends App {
     //QClient.useInitialPath(client, serverMessages, solution)
   }
 
-  def findDangerousPositions(vertices: List[Position], goalPos: Position, safeSpot: Position, empty: Node) = {
+  def findDangerousPositions(vertices: List[Position], edges: Map[Position, List[Position]],
+                             goalPos: Position, box: Box, safeSpot: Position, empty: Node) = {
     Node.walls.add(goalPos)
+    val agentPos = empty.getAgent.getPosition
     empty.getAgent.setPosition(safeSpot)
     val (newVertices, _) = Graph.construct(empty)
-    val diff = vertices.diff(newVertices)
+    val pathToBox = Astar.search(edges, goalPos, box.getPosition)
+    val pathToAgent = Astar.search(edges, agentPos, box.getPosition)
+    val diff = vertices.diff(newVertices).diff(pathToBox).diff(pathToAgent)
     Node.walls.remove(goalPos)
     diff.filter(p => !p.equals(goalPos))
   }
@@ -107,23 +111,23 @@ object LearnClient extends App {
     if ( goals.isEmpty ) {
       return solution
     }
-    val dependencies = getGoalDependencies(goals, goalMatch, node)
+    val (dependencies, goalMatches) = getGoalDependencies(goals, goalMatch, node)
     findGoal(dependencies, solutionLength) match {
       case goalPos =>
         val emptyState = new Node(node.parent)
         emptyState.setAgent(new Agent(node.getAgent.getPosition, node.getAgent.getId))
         val (vertices, edges) = Graph.construct(emptyState)
         val newGoals = goals.filter(goal => !goal.equals(goalPos))
-        val dangerZone = if ( goalMatch.size != 1 ) {
-          val safeBox = node.boxes.filter(box => goalMatch(goalPos) != box.getId && goalMatch.values.contains(box.getId)).last
-          findDangerousPositions(vertices, goalPos, safeBox.getPosition, emptyState)
+        val dangerZone = if ( goalMatches.size != 1 ) {
+          val safeBox = node.boxes.filter(box => goalMatches(goalPos) != box.getId && goalMatches.values.contains(box.getId)).last
+          val box = node.boxes.find(b => goalMatches(goalPos) == b.getId).get
+          findDangerousPositions(vertices, edges, goalPos, box, safeBox.getPosition, emptyState)
         } else {
           List()
         }
-        solveReduced(goalPos, goalMatch, dangerZone, solvedGoals, node, edges) match {
-          case null =>
-            sys.error("Cannot find solution, issue issue!")
-          case newSolution if canReachAllRemainingBoxes(goalPos :: solvedGoals, newSolution.getLast) =>
+        solveReduced(goalPos, goalMatches, dangerZone, solvedGoals, node, edges) match {
+          case null => sys.error("Cannot find solution, issue issue!")
+          case newSolution if canReachAllRemainingBoxes(goalPos, solvedGoals, newSolution.getLast) =>
             newSolution.getFirst.parent = solution match {
               case Nil => null
               case _ => solution.last
@@ -134,12 +138,12 @@ object LearnClient extends App {
             Node.walls.add(goalPos)
             Node.goals.remove(goalPos)
 
-            val newGoalMatches = goalMatch.filter { case (pos,_) => !pos.equals(goalPos) }
+            val newGoalMatches = goalMatches.filter { case (pos,_) => !pos.equals(goalPos) }
             val newSolutionLengths = solutionLength.filter(length => !length._1.equals(goalPos))
             val newSolvedGoals: List[Position] = goalPos :: solvedGoals
             findSolution(newGoals ++ unableToSolve, newGoalMatches, solution ++ newSolution.toList,
                          newSolutionLengths, newSolvedGoals, List(), newNode)
-          case _ => findSolution(newGoals, goalMatch, solution, solutionLength, solvedGoals,
+          case _ => findSolution(newGoals, goalMatches, solution, solutionLength, solvedGoals,
                                  goalPos :: unableToSolve, node)
         }
     }
@@ -196,31 +200,41 @@ object LearnClient extends App {
             }
         }
       }
-      val boxes = initialState.boxes.filter(box => goalChar.equals(Character.toLowerCase(box.getCharacter))).toList
+      val boxes = initialState.boxes.filter(box => goalChar.equals(Character.toLowerCase(box.getCharacter))
+                                                   && !goalMatch.values.contains(box.getId)).toList
       goalMatch += (goalPos -> getBestBox(null, boxes))
     }
     goalMatch
   }
 
   def getGoalDependencies(permutations: List[Position], goalMatch: Map[Position, Int],
-                          initialState: Node): Map[Position, List[Position]] = {
+                          initialState: Node): (Map[Position, List[Position]], Map[Position, Int]) = {
+    var goalMatches: Map[Position, Int] = goalMatch
     def calcDependency(goalDependencies: Map[Position, List[Position]],
-                       goals: List[Position]): Map[Position, List[Position]] = {
+                       goals: List[Position], restarted: Boolean): (Map[Position, List[Position]], Map[Position, Int]) = {
       goals match {
-        case Nil => goalDependencies
+        case Nil => (goalDependencies, goalMatches)
         case car :: cdr =>
-          val dependencies: List[Position] = getGoalDependency(car, permutations, goalMatch, initialState)
-          calcDependency(goalDependencies + (car -> dependencies), cdr)
+          val (dependencies, newGoalMatches, hasChanged) = getGoalDependency(car, permutations, goalMatches, initialState)
+          if ( hasChanged ) {
+            if ( restarted ) {
+              sys.error("Possible circular dependency on character of the same letter")
+            }
+            goalMatches = newGoalMatches
+            calcDependency(Map(), permutations, restarted = true)
+          }
+          calcDependency(goalDependencies + (car -> dependencies), cdr, restarted = false)
       }
     }
     if ( permutations.size == 1 ) {
-      Map(permutations.head -> List())
+      (Map(permutations.head -> List()), goalMatches)
     } else {
-      calcDependency(Map(), permutations)
+      calcDependency(Map(), permutations, false)
     }
   }
 
-  def getGoalDependency(permutation: Position, goals: List[Position], goalMatch: Map[Position, Int], initialState: Node): List[Position] = {
+  def getGoalDependency(permutation: Position, goals: List[Position], goalMatch: Map[Position, Int],
+                        initialState: Node): (List[Position], Map[Position, Int], Boolean) = {
     Node.walls.add(permutation)
     val emptyStartState = new Node(initialState.parent)
     emptyStartState.setAgent(initialState.getAgent)
@@ -238,9 +252,29 @@ object LearnClient extends App {
       }
     }
     val dependencies = findDependencies(List(), goals.filter(goal => !goal.equals(permutation)))
-
     Node.walls.remove(permutation)
-    dependencies
+    val goalChar = Node.goals.get(permutation)
+    if ( dependencies.length == 1 ) {
+      val matchingGoal = dependencies.find(goal => Node.goals.get(goal).equals(goalChar))
+      matchingGoal match {
+        case None => (dependencies, goalMatch, false)
+        case Some(goal) =>
+          val (goalDependencies, _, _)  = getGoalDependency(goal, goals, goalMatch, initialState)
+          if ( goalDependencies.isEmpty ) {
+            (dependencies, goalMatch, false)
+          } else {
+            val boxIdx = goalMatch.get(permutation).get
+            var newGoalMatch = goalMatch.filter { case (goalPos, id) => !permutation.equals(goalPos) && id != boxIdx }
+            val newBoxIdx = goalMatch.get(goal).get
+            newGoalMatch = newGoalMatch.filter { case (goalPos, id) => !goal.equals(goalPos) && id != newBoxIdx }
+            newGoalMatch += (permutation -> newBoxIdx)
+            newGoalMatch += (goal -> boxIdx)
+            (dependencies, newGoalMatch, true)
+          }
+      }
+    } else {
+      (dependencies, goalMatch, false)
+    }
   }
 }
 
