@@ -26,42 +26,59 @@ Work in progress:
 
 ###4. Map progress
 
-##4.1 Single Agent
+####4.1 Single Agent
+#####Difficult
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|
-|Crunch|103|90|0.692|
-|Firefly|82|64|0.533|
-|bruteforce|35|?|0.341|
-|DeliRobot|79|?|0.886|
-|group42|375|?|241.077|
-|Ryther|166|?|2.274|
-|sampdora|59|?|0.469|
-|EpicPhail|
-|Masters|
-|Skynet|
-|Talos|
-|WatsOn|
-|Alpha|
-|Ateam|
-|BullFight|
-|DCN|
-|FOAM|
-|holdkaeft|
-|null|95|?
-|TeamNoOp|
-|wallE|
-|AgentSharp|
-|LionFish|
-|RageQuit|26|?
 |Dillema|
+|DinMor|
 |Humans|
 |JasonFour|
 |JasonX|
+|Masters|1317|?|28.229|
 |PHOBAR|
 |schwenke|
-|sjw|79|?|
-|SAD1|19|19|
-|SAD2|
-|sokobanLevel96|
-|friendOfBFS|
-|friendOfDFS|
+|Skynet|
+#####Easy
+|Level|Current Length|Known Optimal|Time(s)|
+|:---|:---|:---|:---|
+|bruteforce|44|?|0.341|
+|Crunch|101|90|0.565|
+|DeliRobot|81|?|0.886|
+|Firefly|62|60|0.489|
+|group42|375|?|241.077|
+|Ryther|166|?|1.978|
+|sampdoria|57|?|0.341|
+#####Medium
+|Level|Current Length|Known Optimal|Time(s)|
+|:---|:---|:---|:---|
+|Alpha|
+|Ateam|249|?|30.123|
+|BullFight|252|?|6.823|
+|DCN|
+|FOAM|144|?|3.122|
+|holdkaeft|
+|null|95|?|0.844
+|Talos|1408|?|56.967|
+|TeamNoOp|
+|wallE|
+#####Short Solution
+|Level|Current Length|Known Optimal|Time(s)|
+|:---|:---|:---|:---|
+|AgentSharp|
+|LionFish|
+|RageQuit|26|?|0.399|
+#####Long Solution
+|Level|Current Length|Known Optimal|Time(s)|
+|:---|:---|:---|:---|
+|EpicPhail|
+|WatsOn|
+#####Other
+|Level|Current Length|Known Optimal|Time(s)|
+|:---|:---|:---|:---|
+|sjw|81|?|0.748
+|SAD1|19|19|0.321|
+|SAD2|19|19|0.798|
+|sokobanLevel96|83|?|0.599|
+|friendOfBFS|24|24|0.462|
+|friendOfDFS|10|10|0.609|

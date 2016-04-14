@@ -71,9 +71,8 @@ object LearnClient extends App {
     val (_, edges) = Graph.construct(learnClient.emptyStartState)
     val goalMatches: Map[Position, Int] = matchGoalsWithBoxes(learnClient.startState, edges)
     val goalList: mutable.Map[Position, Character] = Node.goals.map { case (goalPos, goalChar) => goalPos->goalChar }
-    val solutionLength: Map[Position, Int] = findSolutionLengths(goalMatches, learnClient.startState)
 
-    val solution: List[Node] = findSolution(goalList.keys.toList, goalMatches, List(), solutionLength, List(),
+    val solution: List[Node] = findSolution(goalList.keys.toList, goalMatches, List(), List(),
                                             List(), learnClient.startState)
     val timeSpent = (System.currentTimeMillis - startTime) / 1000f
     System.err.println(s"Summary: Time: $timeSpent\t ${Memory.stringRep()}")
@@ -106,11 +105,11 @@ object LearnClient extends App {
   }
 
   def findSolution(goals: List[Position], goalMatch: Map[Position, Int], solution: List[Node],
-                   solutionLength: Map[Position, Int], solvedGoals: List[Position],
-                   unableToSolve: List[Position], node: Node): List[Node] = {
+                   solvedGoals: List[Position], unableToSolve: List[Position], node: Node): List[Node] = {
     if ( goals.isEmpty ) {
       return solution
     }
+    val solutionLength: Map[Position, Int] = findSolutionLengths(goalMatch, node)
     val (dependencies, goalMatches) = getGoalDependencies(goals, goalMatch, node)
     findGoal(dependencies, solutionLength) match {
       case goalPos =>
@@ -139,11 +138,10 @@ object LearnClient extends App {
             Node.goals.remove(goalPos)
 
             val newGoalMatches = goalMatches.filter { case (pos,_) => !pos.equals(goalPos) }
-            val newSolutionLengths = solutionLength.filter(length => !length._1.equals(goalPos))
             val newSolvedGoals: List[Position] = goalPos :: solvedGoals
             findSolution(newGoals ++ unableToSolve, newGoalMatches, solution ++ newSolution.toList,
-                         newSolutionLengths, newSolvedGoals, List(), newNode)
-          case _ => findSolution(newGoals, goalMatches, solution, solutionLength, solvedGoals,
+                         newSolvedGoals, List(), newNode)
+          case _ => findSolution(newGoals, goalMatches, solution, solvedGoals,
                                  goalPos :: unableToSolve, node)
         }
     }
