@@ -34,7 +34,7 @@ Work in progress:
 |DinMor|
 |Humans|
 |JasonFour|
-|JasonX|
+|JasonX|719|?|7.615
 |Masters|1317|?|28.229|
 |PHOBAR|
 |schwenke|
@@ -65,8 +65,8 @@ Work in progress:
 #####Short Solution
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|
-|AgentSharp|
-|LionFish|
+|AgentSharp|82|?|1.179
+|LionFish|40|?|0.745
 |RageQuit|26|?|0.399|
 #####Long Solution
 |Level|Current Length|Known Optimal|Time(s)|
