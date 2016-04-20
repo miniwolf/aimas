@@ -10,7 +10,7 @@ import java.util.List;
  * @author miniwolf
  */
 public class Search {
-    public static LinkedList<Node> search(Strategy.AdvancedStrategy strategy, Node initialState) throws IOException {
+    public static LinkedList<Node> search(Strategy.AdvancedStrategy strategy, Node initialState, int threshold) throws IOException {
         System.err.format("Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(initialState);
 
@@ -32,6 +32,10 @@ public class Search {
                 System.err.println(strategy.searchStatus());
                 System.err.println("\n");
                 return leafNode.extractPlan();
+            }
+
+            if ( leafNode.g() > threshold ) {
+                continue;
             }
 
             if ( iterations % 200 == 0 ) {

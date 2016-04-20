@@ -10,7 +10,8 @@ object Graph {
     construct(initialNode, List(), List(), Map())
   }
 
-  private def construct(node: Node, currentVisiting: List[Node], vertices: List[Position], edges: Map[Position, List[Position]]): (List[Position], Map[Position, List[Position]]) = {
+  private def construct(node: Node, currentVisiting: List[Node], vertices: List[Position],
+                        edges: Map[Position, List[Position]]): (List[Position], Map[Position, List[Position]]) = {
     val agentPos = node.getAgent.getPosition
     val children = node.getExpandedNodes
     val newEdges = edges + (agentPos -> children.map(child => child.getAgent.getPosition).toList)

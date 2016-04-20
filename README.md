@@ -42,25 +42,25 @@ Work in progress:
 #####Easy
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|
-|bruteforce|44|?|0.341|
-|Crunch|101|90|0.565|
-|DeliRobot|81|?|0.886|
+|bruteforce|33|?|0.343|
+|Crunch|101|98|0.565|
+|DeliRobot|75|?|0.603|
 |Firefly|62|60|0.489|
 |group42|375|?|241.077|
-|Ryther|166|?|1.978|
-|sampdoria|57|?|0.341|
+|Ryther|164|?|1.978|
+|sampdoria|37|?|0.341|
 #####Medium
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|
 |Alpha|
-|Ateam|249|?|30.123|
+|Ateam|239|?|20.489|
 |BullFight|252|?|6.823|
-|DCN|
-|FOAM|144|?|3.122|
-|holdkaeft|
-|null|95|?|0.844
-|Talos|1408|?|56.967|
-|TeamNoOp|
+|DCN|852|?|82.434|
+|FOAM|108|?|3.666|
+|holdkaeft|188|?|5.222|
+|null|91|?|0.671|
+|Talos|1398|?|59.501|
+|TeamNoOp|114|?|0.567|
 |wallE|
 #####Short Solution
 |Level|Current Length|Known Optimal|Time(s)|
