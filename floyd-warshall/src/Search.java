@@ -1,4 +1,4 @@
-import javafx.geometry.Pos;
+//import javafx.geometry.Pos;
 import searchclient.*;
 
 import java.io.IOException;

@@ -2,7 +2,7 @@ import FibonacciHeap.Entry
 import searchclient.Position
 
 import scala.collection.mutable.HashSet
-
+import scala.collection.immutable
 /**
   * Created by miniwolf on 08-04-2016.
   */
@@ -82,5 +82,33 @@ object Astar {
         }
     }
     List[Position]()
+  }
+
+  def search3(edges: Map[Position, List[Position]], start: Position, path: immutable.HashSet[Position]): Position = {
+    val eKeys = edges.keySet
+    if ( !eKeys.contains(start)) {
+      return null
+    }
+    val startNode = new Node(null, start, 0)
+    val openSet = new FibonacciHeap[Node]()
+    var closedSet = new HashSet[Position]()
+    var openEntryMap = Map[Node, Entry[Node]]()
+    openEntryMap += (startNode -> openSet.enqueue(startNode, 0))
+
+    while ( !openSet.isEmpty ) {
+      val leafNode: Node = openSet.dequeueMin().getValue
+      if ( !path.contains(leafNode.position) ) {
+        return leafNode.position
+      }
+
+      closedSet += leafNode.position
+      edges(leafNode.position).filter(n => !closedSet.contains(n)
+        && !openEntryMap.keySet.contains(new Node(null, n, 0)))
+        .foreach { case child =>
+          val childNode = new Node(leafNode, child, leafNode.gValue + 1)
+          openEntryMap += (childNode -> openSet.enqueue(childNode, childNode.gValue))
+        }
+    }
+    null
   }
 }
