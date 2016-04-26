@@ -33,7 +33,7 @@ Work in progress:
 |Dillema|
 |DinMor|
 |Humans|
-|JasonFour|
+|JasonFour|334|?|6.068|
 |JasonX|719|?|7.615
 |Masters|1317|?|28.229|
 |PHOBAR|
@@ -61,7 +61,7 @@ Work in progress:
 |null|91|?|0.671|
 |Talos|1398|?|59.501|
 |TeamNoOp|114|?|0.567|
-|wallE|
+|wallE|390|?|4.222|
 #####Short Solution
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|
@@ -72,7 +72,7 @@ Work in progress:
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|
 |EpicPhail|
-|WatsOn|
+|WatsOn|972|?|62.658|
 #####Other
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|

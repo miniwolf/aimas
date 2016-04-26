@@ -5,6 +5,7 @@ import searchclient.Command.type;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Node {
     private static Random rnd = new Random(1);
@@ -65,6 +66,38 @@ public class Node {
                 if ( g > 0 && Character.toLowerCase(boxChar) != g ) {
                     return false;
                 }
+            }
+        }
+        return true;
+    }
+
+    public boolean isGoalState2() {
+        for ( int row = 1; row < MAX_ROW - 1; row++ ) {
+            for ( int col = 1; col < MAX_COLUMN - 1; col++ ) {
+                Position pos = new Position(col, row);
+                Character g = goals.get(pos);
+                if ( g == null ) {
+                    continue;
+                }
+
+                Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
+                if ( !b.isPresent() ) {
+                    return false;
+                }
+                Character boxChar = b.get().getCharacter();
+                if ( g > 0 && Character.toLowerCase(boxChar) != g ) {
+                    return false;
+                }
+            }
+        }
+        if (action.actType != Command.type.Move) {
+            if (!(parent.boxes.stream()
+                    .filter(Box::isMovable)
+                    .collect(Collectors.toList())
+                    .get(0)
+                    .getPosition()
+                    .equals(agent.getPosition()))) {
+                return false;
             }
         }
         return true;

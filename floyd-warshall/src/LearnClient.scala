@@ -257,13 +257,15 @@ object LearnClient extends App {
 
   def solveReduced(goal: Position, goalMatch: Map[Position, Int], dangerZone: List[Position],
                    solved: List[Position], node: Node, edges: Map[Position, List[Position]], threshold: Int) = {
+    var localSolution = List[Node]()
+    var node2 = node
     Node.walls.addAll(dangerZone)
     val savedGoals = Node.goals.filter { case (goalPos, goalChar) => !goal.equals(goalPos) }
     savedGoals.foreach { case (goalPos, _) => Node.goals.remove(goalPos) }
     if ( node.boxes.length != 1 ) {
       val boxId = goalMatch.get(goal).get
       val box = node.boxes.filter(box => box.getId == boxId).last
-      val boxPath = findPath2(node, box, goal, edges)
+      var boxPath = findPath2(node, box, goal, edges)
       val agentPath = findPath2(node, box, node.getAgent.getPosition, edges)
       node.boxes.filter(box => !boxPath.contains(box.getPosition)
                                && !agentPath.contains(box.getPosition)
@@ -272,7 +274,6 @@ object LearnClient extends App {
       val solvedBoxes = goalMatch.filter(p => solved.contains(p._1)).values
       node.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
       val boxesOnAgentPath = node.boxes.filter(box => agentPath.contains(box.getPosition) && box.getId != boxId).toList
-      val boxesOnBoxPath = node.boxes.filter(box => boxPath.contains(box.getPosition) && box.getId != boxId).toList
       if ( boxesOnAgentPath.nonEmpty ) {
         var list = List[Box]()
         agentPath.foreach { case pos =>
@@ -286,48 +287,43 @@ object LearnClient extends App {
           }
         }
         list = list.reverse
-        var list2 = List[Position]()
-        list.foreach { case box =>
-          var lockedNode = node.ChildNode()
+        list.foreach { case box3 =>
+          var lockedNode = node2.ChildNode()
+          lockedNode.parent = null
           lockedNode.boxes.foreach { case box2 =>
             box2.setMovable(false)
           }
-          lockedNode.boxes.remove(box)
+          lockedNode.boxes.remove(box3)
 
           val (_, edges2) = Graph.construct(lockedNode)
-          val x = box.getPosition.getX
-          val y = box.getPosition.getY
+          val x = box3.getPosition.getX
+          val y = box3.getPosition.getY
           val testPositions = List[Position](new Position(x+1, y), new Position(x-1, y), new Position(x, y+1), new Position(x, y-1))
-//          var added = false
           val tempBoxGoal = testPositions.map(position => Astar.search3(edges2, position, immutable.HashSet() ++ agentPath)).filter(position => position != null).head
           val removedChar = Node.goals.remove(goal)
-          Node.goals.put(tempBoxGoal, Character.toLowerCase(box.getCharacter))
-//          box.setMovable(true)
-          lockedNode.boxes.add(box)
-          val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(Map(tempBoxGoal -> box.getId), edges2))
-          val solution = Search.search(strategy, lockedNode, 200000)
-          //          testPositions.foreach { case position =>
-//            val tmpBoxGoal = Astar.search3(edges, position, immutable.HashSet() ++ agentPath)
-//            if (tmpBoxGoal != null && !added) {
-//              tempBoxGoal = tmpBoxGoal
-//              added = true
-//            }
-//          }
-          list2 = List[Position]()
+          Node.goals.put(tempBoxGoal, Character.toLowerCase(box3.getCharacter))
+          lockedNode.boxes.add(box3)
+          val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(Map(tempBoxGoal -> box3.getId), edges2))
+          val newSolution = Search.search2(strategy, lockedNode, 200000)
+
+          Node.goals.remove(tempBoxGoal)
+          Node.goals.put(goal, removedChar)
+
+
+          newSolution.head.parent = localSolution match {
+            case Nil => null
+            case _ => localSolution.last
+          }
+          localSolution = localSolution ++ newSolution
+
+          node2 = newSolution.last.ChildNode()
+          node2.parent = null
         }
-
-
-//        removeGoal
-//        val tempGoal = findTempGoalForBox // find safespot for the box
-//        addGoalAtLocationForBox(tempGoal)
-//
-//        val solution = solve
-//        removeGoalAtLocationForBox
-//        addAllGoals
-//
-//        moveBoxesOutOfTheWay(boxesToRemove, node)
       }
-      if ( boxesOnBoxPath.size > 1 ) {
+      val (_, edges2) = Graph.construct(node2)
+      boxPath = findPath2(node2, box, goal, edges)
+      val boxesOnBoxPath = node2.boxes.filter(box2 => boxPath.contains(box2.getPosition) && box2.getId != boxId).toList
+      if ( boxesOnBoxPath.size > 0 ) {
         var list = List[Box]()
         boxPath.foreach { case pos =>
           val filteredBoxOnPos = boxesOnBoxPath.filter(box => box.getPosition.equals(pos))
@@ -339,15 +335,48 @@ object LearnClient extends App {
             list = boxOnPos :: list
           }
         }
-        list = list.reverse
-        list.foreach { case pos =>
+//        list = list.reverse
+        list.foreach { case box3 =>
+          var lockedNode = node2.ChildNode()
+          lockedNode.parent = null
+          lockedNode.boxes.foreach { case box2 =>
+            box2.setMovable(false)
+          }
+          lockedNode.boxes.remove(box3)
 
+          val (_, edges2) = Graph.construct(lockedNode)
+          val x = box3.getPosition.getX
+          val y = box3.getPosition.getY
+          val testPositions = List[Position](new Position(x+1, y), new Position(x-1, y), new Position(x, y+1), new Position(x, y-1))
+          val tempBoxGoal = testPositions.map(position => Astar.search3(edges2, position, immutable.HashSet() ++ boxPath)).filter(position => position != null).head
+          val removedChar = Node.goals.remove(goal)
+          Node.goals.put(tempBoxGoal, Character.toLowerCase(box3.getCharacter))
+          lockedNode.boxes.add(box3)
+          val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(Map(tempBoxGoal -> box3.getId), edges2))
+          val newSolution = Search.search2(strategy, lockedNode, 200000)
+
+          Node.goals.remove(tempBoxGoal)
+          Node.goals.put(goal, removedChar)
+
+
+                    newSolution.head.parent = localSolution match {
+                      case Nil => null
+                      case _ => localSolution.last
+                    }
+          localSolution = localSolution ++ newSolution
+
+          node2 = newSolution.last.ChildNode()
+          node2.parent = null
         }
       }
+
+      node2.boxes.filter(box => !boxPath.contains(box.getPosition)
+        && box.getId != boxId)
+        .foreach(box => box.setMovable(false))
     }
 
     val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(goalMatch, edges))
-    val solution = Search.search(strategy, node, threshold)
+    val solution = localSolution ++ Search.search(strategy, node2, 200000)
     savedGoals.foreach { case (goalPos,goalChar) => Node.goals.put(goalPos, goalChar) }
     node.boxes.foreach(box => box.setMovable(true))
     Node.walls.removeAll(dangerZone)
@@ -400,7 +429,9 @@ object LearnClient extends App {
             goalMatches = newGoalMatches
             calcDependency(Map(), permutations, restarted = true)
           }
-          calcDependency(goalDependencies + (car -> dependencies), cdr, restarted = false)
+          else {
+            calcDependency(goalDependencies + (car -> dependencies), cdr, restarted = false)
+          }
       }
     }
     if ( permutations.size == 1 ) {
