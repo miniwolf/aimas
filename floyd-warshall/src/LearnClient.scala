@@ -11,25 +11,6 @@ import scala.collection.immutable.Map
   * @author miniwolf
   */
 object LearnClient extends App {
-  def canReachAllRemainingBoxes(goalPos: Position, solvedGoals: List[Position], node: Node): Boolean = {
-    Node.walls.add(goalPos)
-    (goalPos :: solvedGoals).foreach(goal =>
-      node.boxes.filter(box => box.getPosition.equals(goal)).last.setMovable(false))
-
-    val emptyState = new Node(node.parent)
-    emptyState.setAgent(node.getAgent)
-    val (_, edges) = Graph.construct(emptyState)
-    val res = node.boxes.filter(box => box.isMovable) match {
-      case list if list.isEmpty => true
-      case list => !list.exists(box => Astar.search(edges, node.getAgent.getPosition, box.getPosition).isEmpty)
-    }
-
-    Node.walls.remove(goalPos)
-    (goalPos :: solvedGoals).foreach(goal =>
-      node.boxes.filter(box => box.getPosition.equals(goal)).last.setMovable(true))
-    res
-  }
-
   override def main(args: Array[String]) {
     val serverMessages: BufferedReader = new BufferedReader(new InputStreamReader(System.in))
     System.err
@@ -57,7 +38,7 @@ object LearnClient extends App {
     val timeSpent = (System.currentTimeMillis - startTime) / 1000f
     System.err.println(s"Summary: Time: $timeSpent\t ${Memory.stringRep()}")
     Node.walls.removeAll(goalList.keys.toList)
-    goalList.foreach { case (goalPos, goalChar) => Node.goals.put(goalPos, goalChar) }
+    Node.goals = Node.goals ++ goalList
     solution.foreach { case n: Node =>
       val act = n.action.toActionString
       println(act)

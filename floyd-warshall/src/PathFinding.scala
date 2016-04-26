@@ -7,7 +7,8 @@ import scala.collection.JavaConversions._
   * Created by miniwolf on 26-04-2016.
   */
 object PathFinding {
-  def findPath(node: Node, ignoreBoxEdges: Map[Position, List[Position]], findBox: Box, goalPos: Position): List[Position] = {
+  def findPath(node: Node, ignoreBoxEdges: Map[Position, List[Position]], findBox: Box,
+               goalPos: Position): List[Position] = {
     node.boxes.remove(node.boxes.indexOf(findBox))
     node.boxes.foreach(box => box.setMovable(false))
 
@@ -32,7 +33,8 @@ object PathFinding {
     Astar.search2(edges, findBox.getPosition, goalPos, hashSet)
   }
 
-  def findPathWithLimits(path: List[Position], remainingBoxes: List[Box], node: Node, findBox: Box, goal: Position): List[Position] = {
+  def findPathWithLimits(path: List[Position], remainingBoxes: List[Box], node: Node, findBox: Box,
+                         goal: Position): List[Position] = {
     remainingBoxes match {
       case Nil => path
       case box :: cdr =>
