@@ -1,8 +1,7 @@
 import FibonacciHeap.Entry
 import searchclient.Position
 
-import scala.collection.mutable.HashSet
-import scala.collection.immutable
+import scala.collection.immutable.HashSet
 /**
   * Created by miniwolf on 08-04-2016.
   */
@@ -84,7 +83,7 @@ object Astar {
     List[Position]()
   }
 
-  def search3(edges: Map[Position, List[Position]], start: Position, path: immutable.HashSet[Position], depth: Int): Position = {
+  def search3(edges: Map[Position, List[Position]], start: Position, path: HashSet[Position], depth: Int): Position = {
     val eKeys = edges.keySet
     if ( !eKeys.contains(start)) {
       return null
