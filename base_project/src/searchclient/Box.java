@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by miniwolf on 31-03-2016.
+ * @author miniwolf
  */
 public class Box implements Cloneable {
     private Position position;
     private Character character;
-    private List<Position> goalPath;
+    private List<Position> goalPath = new ArrayList<>();
     private int id;
     private boolean movable = true;
 

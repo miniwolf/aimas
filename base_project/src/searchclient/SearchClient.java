@@ -81,12 +81,12 @@ public class SearchClient {
         SearchClient client = new SearchClient(lines);
 
         Strategy strategy;
-        //strategy = new StrategyBFS();
+        strategy = new StrategyBFS();
         // Ex 1:
         //strategy = new StrategyDFS();
 
         // Ex 3:
-        strategy = new StrategyBestFirst( new AStar2( client.initialState ) );
+        //strategy = new StrategyBestFirst( new AStar2( client.initialState ) );
         //strategy = new StrategyBestFirst( new WeightedAStar2( client.initialState ) );
         //strategy = new StrategyBestFirst( new Greedy2( client.initialState ) );
 
