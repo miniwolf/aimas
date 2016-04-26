@@ -1,5 +1,6 @@
 package searchclient;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,6 +17,7 @@ public class Box implements Cloneable {
         this.position = position;
         this.character = character;
         this.id = id;
+        this.goalPath = new ArrayList<>();
     }
 
     public Position getPosition() {

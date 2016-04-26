@@ -199,7 +199,7 @@ object LearnClient extends App {
             List()
           }
 
-          solveReduced(goalPos, goalMatches, dangerZone, solvedGoals, node, edges, threshold) match {
+          solveReduced(goalPos, goalMatches, dangerZone, solvedGoals, node, edges, threshold, 0) match {
             case null => solveBestGoal(cdr, bestSoFar, bestSoFar._2.length, node, goalMatches, solvedGoals, solutionLength, goalsWithBoxes)
             case newSolution =>
               if ( bestSoFar._2.isEmpty || newSolution.length < bestSoFar._2.length ) {
@@ -256,7 +256,7 @@ object LearnClient extends App {
   }
 
   def solveReduced(goal: Position, goalMatch: Map[Position, Int], dangerZone: List[Position],
-                   solved: List[Position], node: Node, edges: Map[Position, List[Position]], threshold: Int) = {
+                   solved: List[Position], node: Node, edges: Map[Position, List[Position]], threshold: Int, depth: Int) : List[Node]= {
     var localSolution = List[Node]()
     var node2 = node
     Node.walls.addAll(dangerZone)
@@ -299,7 +299,12 @@ object LearnClient extends App {
           val x = box3.getPosition.getX
           val y = box3.getPosition.getY
           val testPositions = List[Position](new Position(x+1, y), new Position(x-1, y), new Position(x, y+1), new Position(x, y-1))
-          val tempBoxGoal = testPositions.map(position => Astar.search3(edges2, position, immutable.HashSet() ++ agentPath)).filter(position => position != null).head
+          val tempBoxGoalList = testPositions.map(position => Astar.search3(edges2, position, immutable.HashSet() ++ agentPath, depth)).filter(position => position != null)
+          var tempBoxGoal:Position = null
+          if (tempBoxGoalList.nonEmpty)
+            tempBoxGoal = tempBoxGoalList.head
+          else
+            return solveReduced(goal, goalMatch, dangerZone, solved, node, edges, threshold, depth + 1)
           val removedChar = Node.goals.remove(goal)
           Node.goals.put(tempBoxGoal, Character.toLowerCase(box3.getCharacter))
           lockedNode.boxes.add(box3)
@@ -323,7 +328,7 @@ object LearnClient extends App {
       val (_, edges2) = Graph.construct(node2)
       boxPath = findPath2(node2, box, goal, edges)
       val boxesOnBoxPath = node2.boxes.filter(box2 => boxPath.contains(box2.getPosition) && box2.getId != boxId).toList
-      if ( boxesOnBoxPath.size > 0 ) {
+      if ( boxesOnBoxPath.nonEmpty ) {
         var list = List[Box]()
         boxPath.foreach { case pos =>
           val filteredBoxOnPos = boxesOnBoxPath.filter(box => box.getPosition.equals(pos))
@@ -348,7 +353,12 @@ object LearnClient extends App {
           val x = box3.getPosition.getX
           val y = box3.getPosition.getY
           val testPositions = List[Position](new Position(x+1, y), new Position(x-1, y), new Position(x, y+1), new Position(x, y-1))
-          val tempBoxGoal = testPositions.map(position => Astar.search3(edges2, position, immutable.HashSet() ++ boxPath)).filter(position => position != null).head
+          var tempBoxGoalList = testPositions.map(position => Astar.search3(edges2, position, immutable.HashSet() ++ boxPath, depth)).filter(position => position != null)
+          var tempBoxGoal:Position = null
+          if (tempBoxGoalList.nonEmpty)
+            tempBoxGoal = tempBoxGoalList.head
+          else
+            return solveReduced(goal, goalMatch, dangerZone, solved, node, edges, threshold, depth + 1)
           val removedChar = Node.goals.remove(goal)
           Node.goals.put(tempBoxGoal, Character.toLowerCase(box3.getCharacter))
           lockedNode.boxes.add(box3)
@@ -359,10 +369,10 @@ object LearnClient extends App {
           Node.goals.put(goal, removedChar)
 
 
-                    newSolution.head.parent = localSolution match {
-                      case Nil => null
-                      case _ => localSolution.last
-                    }
+          newSolution.head.parent = localSolution match {
+            case Nil => null
+            case _ => localSolution.last
+          }
           localSolution = localSolution ++ newSolution
 
           node2 = newSolution.last.ChildNode()
@@ -376,11 +386,13 @@ object LearnClient extends App {
     }
 
     val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(goalMatch, edges))
-    val solution = localSolution ++ Search.search(strategy, node2, 200000)
+    val solution = Search.search(strategy, node2, 200000)
+    if (solution == null)
+
     savedGoals.foreach { case (goalPos,goalChar) => Node.goals.put(goalPos, goalChar) }
     node.boxes.foreach(box => box.setMovable(true))
     Node.walls.removeAll(dangerZone)
-    solution
+    localSolution ++ solution
   }
 
   def findGoal(dependencies: Map[Position, List[Position]], solutionLength: Map[Position, Int]): List[Position] = {

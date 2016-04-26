@@ -84,11 +84,12 @@ object Astar {
     List[Position]()
   }
 
-  def search3(edges: Map[Position, List[Position]], start: Position, path: immutable.HashSet[Position]): Position = {
+  def search3(edges: Map[Position, List[Position]], start: Position, path: immutable.HashSet[Position], depth: Int): Position = {
     val eKeys = edges.keySet
     if ( !eKeys.contains(start)) {
       return null
     }
+    var foundNodes = List[Position]()
     val startNode = new Node(null, start, 0)
     val openSet = new FibonacciHeap[Node]()
     var closedSet = new HashSet[Position]()
@@ -98,7 +99,12 @@ object Astar {
     while ( !openSet.isEmpty ) {
       val leafNode: Node = openSet.dequeueMin().getValue
       if ( !path.contains(leafNode.position) ) {
-        return leafNode.position
+        if (foundNodes.size < depth) {
+          foundNodes = leafNode.position :: foundNodes
+        }
+        else {
+          return leafNode.position
+        }
       }
 
       closedSet += leafNode.position
@@ -109,6 +115,9 @@ object Astar {
           openEntryMap += (childNode -> openSet.enqueue(childNode, childNode.gValue))
         }
     }
-    null
+    if (foundNodes.nonEmpty)
+      foundNodes.head
+    else
+      null
   }
 }
