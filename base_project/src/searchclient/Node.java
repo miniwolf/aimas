@@ -47,7 +47,10 @@ public class Node {
         return this.parent == null;
     }
 
-    public boolean isGoalState() {
+    public boolean isGoalState(List<Position> dangerZone) {
+        if ( dangerZone.contains(agent.getPosition()) ) {
+            return false;
+        }
         for ( Position pos: Node.goals.keySet() ) {
             Character g = goals.get(pos);
 
@@ -64,16 +67,17 @@ public class Node {
     }
 
     public boolean isGoalState2() {
-        if ( !isGoalState() ) {
+        if ( !isGoalState(new ArrayList<>()) ) {
             return false;
         }
-        List<Box> collect = parent.boxes.stream().filter(Box::isMovable).collect(Collectors.toList());
+        return true;
+        /*List<Box> collect = parent.boxes.stream().filter(Box::isMovable).collect(Collectors.toList());
         for ( Box box : collect ) {
             if ( box.getPosition().equals(agent.getPosition()) ) {
                 return true;
             }
         }
-        return false;
+        return false;*/
     }
 
     public ArrayList<Node> getExpandedNodes() {

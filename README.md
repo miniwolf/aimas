@@ -28,21 +28,21 @@ Work in progress:
 
 ####4.1 Single Agent
 #####Difficult
-|Level|Current Length|Known Optimal|Time(s)|
+|Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
 |Dillema|
 |DinMor|
 |Humans|
-|JasonFour|334|?|6.068|
+|JasonFour|352|334|1.068|
 |JasonX|719|?|7.615
 |Masters|1317|?|28.229|
 |PHOBAR|
 |schwenke|
-|Skynet|
+|Skynet|581|?|28.621|
 #####Easy
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|
-|bruteforce|33|?|0.343|
+|bruteforce|43|33|0.343|
 |Crunch|101|98|0.565|
 |DeliRobot|75|?|0.603|
 |Firefly|62|60|0.489|

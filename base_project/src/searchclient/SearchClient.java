@@ -137,7 +137,7 @@ public class SearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if ( leafNode.isGoalState() ) {
+            if ( leafNode.isGoalState(new ArrayList<>()) ) {
                 return leafNode.extractPlan();
             }
 

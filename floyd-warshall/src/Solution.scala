@@ -1,3 +1,5 @@
+import java.util
+
 import Strategy.AdvancedStrategy
 import searchclient.{Agent, Box, Node, Position}
 
@@ -35,8 +37,7 @@ object Solution {
         val newGoalMatches = goalMatches.filter { case (pos,_) => !pos.equals(goalPos) }
         val newSolvedGoals: List[Position] = goalPos :: solvedGoals
         val newGoals = goals.filter(goal => !goal.equals(goalPos))
-        findSolution(newGoals, newGoalMatches, solution ++ newSolution,
-                     newSolvedGoals, newNode)
+        findSolution(newGoals, newGoalMatches, solution ++ newSolution, newSolvedGoals, newNode)
     }
   }
 
@@ -120,12 +121,9 @@ object Solution {
   def findDangerousPositions(vertices: List[Position], edges: Map[Position, List[Position]],
                              goalPos: Position, box: Box, safeSpot: Position, empty: Node) = {
     Node.walls.add(goalPos)
-    val agentPos = empty.getAgent.getPosition
     empty.getAgent.setPosition(safeSpot)
     val (newVertices, _) = Graph.construct(empty)
-    val pathToBox = PathFinding.findPath2(empty, box, goalPos, edges)
-    val pathToAgent = PathFinding.findPath2(empty, box, agentPos, edges)
-    val diff = vertices.diff(newVertices).diff(pathToBox).diff(pathToAgent)
+    val diff = vertices.diff(newVertices)
     Node.walls.remove(goalPos)
     diff.filter(p => !p.equals(goalPos))
   }
@@ -154,18 +152,21 @@ object Solution {
         lockedNode.boxes.add(box)
 
         val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(Map(tempBoxGoal -> box.getId), edges))
-        val solution = Search.search2(strategy, lockedNode, 200000).toList
+        val solution: util.LinkedList[Node] = Search.search2(strategy, lockedNode, 200000)
 
         Node.goals.put(goal, removedChar)
         Node.goals.remove(tempBoxGoal)
 
+        if ( solution == null ) {
+          return (null, node)
+        }
         solution.head.parent = solutionList match {
           case Nil => null
           case _ => solutionList.last
         }
         val newNode = solution.last.ChildNode()
         newNode.parent = null
-        removeBoxesFromPath(cdr, solution, goal, newNode, path, depth)
+        removeBoxesFromPath(cdr, solutionList ++ solution.toList, goal, newNode, path, depth)
     }
   }
 
@@ -200,15 +201,13 @@ object Solution {
     }
   }
 
-  def resetNode(savedGoals: Map[Position, Character], node: Node, dangerZone: List[Position]): Unit = {
+  def resetNode(savedGoals: Map[Position, Character], node: Node): Unit = {
     Node.goals = Node.goals ++ savedGoals
     node.boxes.foreach(box => box.setMovable(true))
-    Node.walls.removeAll(dangerZone)
   }
 
   def solveReduced(goal: Position, goalMatch: Map[Position, Int], dangerZone: List[Position],
                    solved: List[Position], node: Node, edges: Map[Position, List[Position]], threshold: Int): List[Node] = {
-    Node.walls.addAll(dangerZone)
     val savedGoals = Node.goals.filter { case (goalPos, goalChar) => !goal.equals(goalPos) }.toMap
     savedGoals.foreach(goal => Node.goals.remove(goal._1))
     var solution = List[Node]()
@@ -226,7 +225,7 @@ object Solution {
       node.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
       val (reducedSolution, reducedNode) = reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, 1, null)
       if ( reducedSolution == null ) {
-        resetNode(savedGoals, node, dangerZone)
+        resetNode(savedGoals, node)
         return null
       }
       currentNode = reducedNode
@@ -234,9 +233,9 @@ object Solution {
     }
 
     val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(goalMatch, edges))
-    val newSolution = Search.search(strategy, currentNode, threshold)
+    val newSolution = Search.search(strategy, currentNode, threshold, dangerZone)
 
-    resetNode(savedGoals, node, dangerZone)
+    resetNode(savedGoals, node)
     if ( newSolution == null ) {
       return null
     }

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * @author miniwolf
  */
 public class Search {
-    public static LinkedList<Node> search(Strategy.AdvancedStrategy strategy, Node initialState, int threshold) throws IOException {
+    public static LinkedList<Node> search(Strategy.AdvancedStrategy strategy, Node initialState, int threshold, List<Position> dangerZone) throws IOException {
         System.err.format("Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(initialState);
 
@@ -28,7 +28,7 @@ public class Search {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if ( leafNode.isGoalState() ) {
+            if ( leafNode.isGoalState(dangerZone) ) {
                 System.err.println("\nSummary for " + strategy);
                 System.err.println(strategy.searchStatus());
                 System.err.println("\n");

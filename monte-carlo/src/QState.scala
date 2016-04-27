@@ -43,7 +43,7 @@ class QState(val state: Node, qParent: QState) extends Node(if ( qParent == null
   def isFullyExpanded: Boolean = children.nonEmpty && children.size == actions.size
 
   @inline
-  final def isGoal: Boolean = state.isGoalState
+  final def isGoal: Boolean = state.isGoalState(List())
 
   override def toString: String =
     s"Instance:\n${state.toString}"

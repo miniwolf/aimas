@@ -1,4 +1,4 @@
-import searchclient.{Node, Position}
+import searchclient.{Agent, Node, Position}
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.Map
@@ -12,8 +12,9 @@ object Dependency {
       case Nil => (goalMatch, needsRestart)
       case (goal, dependency) :: cdr if Node.goals.get(goal).equals(Node.goals.get(dependency.head)) =>
         val boxId = goalMatch(goal)
-        val newGoalMatch = goalMatch + (goal -> goalMatch(dependency.head)) + (dependency.head -> boxId)
-        fixCircularDependencies(cdr, newGoalMatch, needsRestart)
+        val headDependency = dependency.head
+        val newGoalMatch = goalMatch + (goal -> goalMatch(headDependency)) + (headDependency -> boxId)
+        fixCircularDependencies(cdr.filter(dep => !dep._1.equals(headDependency)), newGoalMatch, true)
       case car :: cdr => fixCircularDependencies(cdr, goalMatch, needsRestart)
     }
   }
@@ -35,10 +36,14 @@ object Dependency {
       (Map(permutations.head -> List()), goalMatch)
     } else {
       val dependencies = calcDependency(Map(), permutations)
-      val singleDependencies = dependencies.filter(pair => pair._2.size == 1).toList
-      fixCircularDependencies(singleDependencies, goalMatch, needsRestart = false) match {
-        case (_, false) => (dependencies, goalMatch)
-        case (newGoalMatches, true) => getGoalDependencies(permutations, newGoalMatches, initialState)
+      if ( dependencies.values.exists(list => list.isEmpty) ) {
+        (dependencies, goalMatch)
+      } else {
+        val singleDependencies = dependencies.filter(pair => pair._2.size == 1).toList
+        fixCircularDependencies(singleDependencies, goalMatch, needsRestart = false) match {
+          case (_, false) => (dependencies, goalMatch)
+          case (newGoalMatches, true) => getGoalDependencies(permutations, newGoalMatches, initialState)
+        }
       }
     }
   }
@@ -46,7 +51,7 @@ object Dependency {
   def getGoalDependency(permutation: Position, goals: List[Position], goalMatch: Map[Position, Int],
                         initialState: Node): List[Position] = {
     val emptyStartState = new Node(initialState.parent)
-    emptyStartState.setAgent(initialState.getAgent)
+    emptyStartState.setAgent(new Agent(goals.last, 0))
     val (_, edges) = Graph.construct(emptyStartState)
 
     def findDependencies(dependencies: List[Position], goals: List[Position]): List[Position] = {
