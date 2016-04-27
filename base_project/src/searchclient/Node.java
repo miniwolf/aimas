@@ -224,7 +224,12 @@ public class Node {
                 if ( walls.contains(pos) ) {
                     s.append("+");
                 } else if ( b.isPresent() ) {
-                    s.append(b.get().getCharacter());
+                    Box box = b.get();
+                    if ( box.isMovable() ) {
+                        s.append(box.getCharacter());
+                    } else {
+                        s.append("-");
+                    }
                 } else if ( goals.containsKey(pos) ) {
                     s.append(goals.get(pos));
                 } else if ( agent.getPosition().equals(pos) ) {

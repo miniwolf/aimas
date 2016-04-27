@@ -175,10 +175,28 @@ object Solution {
       case boxes =>
         val list: List[Box] = path.map(pos => boxes.filter(box => box.getPosition.equals(pos)))
                                   .filter(list => list.nonEmpty).map(list => list.head)
-        removeBoxesFromPath(list, List(), goal, node, HashSet() ++ path, depth) match {
-          case (null, _) => reducePath(path, node, boxId, goal, depth + 1)
-          case (solution, newNode) => (solution, newNode)
+        removeBoxesFromPath(list, List(), goal, node, HashSet() ++ path, depth)
+    }
+  }
+
+  def reducesPaths(agentPath: List[Position], boxPath: List[Position], node: Node, boxId: Int,
+                   goal: Position, threshold: Int, depth: Int, solution: List[Node]): (List[Node], Node) = {
+    val currentNode = node
+    solution match {
+      case null =>
+        reducePath(agentPath, currentNode, boxId, goal, depth) match {
+          case (null, _) => reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth + 1, solution)
+          case (agentSolution, _) if agentSolution.length > threshold => (null, node)
+          case (agentSolution, agentNode) =>
+            reducePath(boxPath, agentNode, boxId, goal, 1) match {
+              case (null, _) => reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth + 1, solution)
+              case (boxSolution, _) if boxSolution.length + agentSolution.length > threshold => (null, node)
+              case (boxSolution, boxNode) =>
+                val newSolution = agentSolution ++ boxSolution
+                reducesPaths(agentPath, boxPath, boxNode, boxId, goal, threshold, depth + 1, newSolution)
+            }
         }
+      case solutionList => (solutionList, node)
     }
   }
 
@@ -206,20 +224,13 @@ object Solution {
                 .foreach(box => box.setMovable(false))
       val solvedBoxes = goalMatch.filter(p => solved.contains(p._1)).values
       node.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
-      val (agentSolution, agentNode) = reducePath(agentPath, currentNode, boxId, goal, 1)
-      currentNode = agentNode
-      solution = solution ++ agentSolution
-      if ( solution.length > threshold ) {
+      val (reducedSolution, reducedNode) = reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, 1, null)
+      if ( reducedSolution == null ) {
         resetNode(savedGoals, node, dangerZone)
         return null
       }
-      val (boxSolution, goalNode) = reducePath(boxPath, currentNode, boxId, goal, 1)
-      currentNode = goalNode
-      solution = solution ++ boxSolution
-      if ( solution.length > threshold ) {
-        resetNode(savedGoals, node, dangerZone)
-        return null
-      }
+      currentNode = reducedNode
+      solution = reducedSolution
     }
 
     val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(goalMatch, edges))
