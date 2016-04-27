@@ -57,15 +57,15 @@ object LearnClient extends App {
       def getBestBox(currentBest: Box, boxes: List[Box]): Int = {
         boxes match {
           case Nil => currentBest.getId
-          case car :: cdr if currentBest == null =>
-            val currentPath = Astar.search(edges, goalPos, car.getPosition)
-            car.setGoalPath(currentPath)
-            getBestBox(car, cdr)
-          case car :: cdr =>
-            val currentPath = Astar.search(edges, goalPos, car.getPosition)
-            car.setGoalPath(currentPath)
+          case box :: cdr if currentBest == null =>
+            val currentPath = PathFinding.findPath2(initialState, box, goalPos, edges)
+            box.setGoalPath(currentPath)
+            getBestBox(box, cdr)
+          case box :: cdr =>
+            val currentPath = PathFinding.findPath2(initialState, box, goalPos, edges)
+            box.setGoalPath(currentPath)
             currentPath.length < currentBest.getGoalPath.length match {
-              case true => getBestBox(car, cdr)
+              case true => getBestBox(box, cdr)
               case false => getBestBox(currentBest, cdr)
             }
         }

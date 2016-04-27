@@ -23,7 +23,7 @@ abstract class Heuristic(goalMatch: Map[Position, Int], edges: Map[Position, Lis
     Node.goals.foreach { case (goalPos, _) =>
       val matchingBox = n.boxes.find(box => box.getId == goalMatch(goalPos)).get
       val boxRoute = boxPath(n, matchingBox, goalPos)
-      val agentPath = Astar.search(edges, n.getAgent.getPosition, matchingBox.getPosition)
+      val agentPath = PathFinding.findPath2(n, matchingBox, n.getAgent.getPosition, edges)
       n.boxes.filter(box => box.getId != matchingBox.getId &&
                             (agentPath.contains(box.getPosition) || boxRoute.contains(box.getPosition)))
              .foreach(_ => value += 1)
@@ -38,18 +38,16 @@ abstract class Heuristic(goalMatch: Map[Position, Int], edges: Map[Position, Lis
                                       && box.getId == matchingBox.getId) ) {
       matchingBox.getGoalPath match {
         case list if list.isEmpty && !matchingBox.getPosition.equals(goalPos) =>
-          val path = Astar.search(edges, goalPos, matchingBox.getPosition)
+          val path = PathFinding.findPath2(n, matchingBox, goalPos, edges)
           matchingBox.setGoalPath(path)
           path
         case list => list.toList
       }
     } else {
-      val parentBox = n.parent.boxes.find(box => box.getId == matchingBox.getId).get
-      val path = parentBox.getGoalPath match {
+      val path = n.parent.boxes.find(box => box.getId == matchingBox.getId).get.getGoalPath match {
         case list if list.contains(matchingBox.getPosition) =>
           list.splitAt(list.indexOf(matchingBox.getPosition))._1.toList
-        case _ =>
-          Astar.search(edges, goalPos, matchingBox.getPosition)
+        case _ => PathFinding.findPath2(n, matchingBox, goalPos, edges)
       }
       matchingBox.setGoalPath(path)
       path

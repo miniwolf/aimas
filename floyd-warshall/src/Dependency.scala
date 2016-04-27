@@ -52,10 +52,9 @@ object Dependency {
     def findDependencies(dependencies: List[Position], goals: List[Position]): List[Position] = {
       goals match {
         case Nil => dependencies
-        case car :: cdr =>
-          Astar.search(edges, car,
-                       initialState.boxes.find(box => box.getId == goalMatch(car)).get.getPosition) match {
-            case null | Nil => findDependencies(car :: dependencies, cdr)
+        case goal :: cdr =>
+          PathFinding.findPath2(initialState, initialState.boxes.find(box => box.getId == goalMatch(goal)).get, goal, edges) match {
+            case null | Nil => findDependencies(goal :: dependencies, cdr)
             case _ => findDependencies(dependencies, cdr)
           }
       }

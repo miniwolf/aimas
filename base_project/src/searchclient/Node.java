@@ -1,9 +1,7 @@
 package searchclient;
 
 import searchclient.Command.dir;
-import searchclient.Command.type;
 
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,62 +43,37 @@ public class Node {
         return g;
     }
 
-    public boolean isInitialState() {
+    private boolean isInitialState() {
         return this.parent == null;
     }
 
     public boolean isGoalState() {
-        for ( int row = 1; row < MAX_ROW - 1; row++ ) {
-            for ( int col = 1; col < MAX_COLUMN - 1; col++ ) {
-                Position pos = new Position(col, row);
-                Character g = goals.get(pos);
-                if ( g == null ) {
-                    continue;
-                }
+        for ( Position pos: Node.goals.keySet() ) {
+            Character g = goals.get(pos);
 
-                Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
-                if ( !b.isPresent() ) {
-                    return false;
-                }
-                Character boxChar = b.get().getCharacter();
-                if ( g > 0 && Character.toLowerCase(boxChar) != g ) {
-                    return false;
-                }
+            Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
+            if ( !b.isPresent() ) {
+                return false;
+            }
+            Character boxChar = b.get().getCharacter();
+            if ( g > 0 && Character.toLowerCase(boxChar) != g ) {
+                return false;
             }
         }
         return true;
     }
 
     public boolean isGoalState2() {
-        for ( int row = 1; row < MAX_ROW - 1; row++ ) {
-            for ( int col = 1; col < MAX_COLUMN - 1; col++ ) {
-                Position pos = new Position(col, row);
-                Character g = goals.get(pos);
-                if ( g == null ) {
-                    continue;
-                }
-
-                Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
-                if ( !b.isPresent() ) {
-                    return false;
-                }
-                Character boxChar = b.get().getCharacter();
-                if ( g > 0 && Character.toLowerCase(boxChar) != g ) {
-                    return false;
-                }
+        if ( !isGoalState() ) {
+            return false;
+        }
+        List<Box> collect = parent.boxes.stream().filter(Box::isMovable).collect(Collectors.toList());
+        for ( Box box : collect ) {
+            if ( box.getPosition().equals(agent.getPosition()) ) {
+                return true;
             }
         }
-        if (action.actType != Command.type.Move) {
-            if (!(parent.boxes.stream()
-                    .filter(Box::isMovable)
-                    .collect(Collectors.toList())
-                    .get(0)
-                    .getPosition()
-                    .equals(agent.getPosition()))) {
-                return false;
-            }
-        }
-        return true;
+        return false;
     }
 
     public ArrayList<Node> getExpandedNodes() {
@@ -111,55 +84,62 @@ public class Node {
             int newAgentCol = agent.getPosition().getX() + dirToColChange(c.dir1);
             Position agentPos = new Position(newAgentCol, newAgentRow);
 
-            if ( c.actType == type.Move ) {
-                // Check if there's a wall or box on the cell to which the agent is moving
-                if ( !cellIsFree(newAgentCol, newAgentRow) ) {
-                    continue;
+            switch (c.actType) {
+                case Move: {
+                    // Check if there's a wall or box on the cell to which the agent is moving
+                    if ( !cellIsFree(newAgentCol, newAgentRow) ) {
+                        continue;
+                    }
+                    Node n = this.ChildNode();
+                    n.action = c;
+                    n.getAgent().setPosition(agentPos);
+                    expandedNodes.add(n);
+                    break;
                 }
-                Node n = this.ChildNode();
-                n.action = c;
-                n.getAgent().setPosition(agentPos);
-                expandedNodes.add(n);
-            } else if ( c.actType == type.Push ) {
-                // Make sure that there's actually a box to move
-                Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(agentPos)).findFirst();
-                if ( !b.isPresent() || !b.get().isMovable() ) {
-                    continue;
+                case Push: {
+                    // Make sure that there's actually a box to move
+                    Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(agentPos)).findFirst();
+                    if ( !b.isPresent() || !b.get().isMovable() ) {
+                        continue;
+                    }
+                    int boxIdx = boxes.indexOf(b.get());
+                    int newBoxRow = newAgentRow + dirToRowChange(c.dir2);
+                    int newBoxCol = newAgentCol + dirToColChange(c.dir2);
+                    // .. and that new cell of box is free
+                    if ( !cellIsFree(newBoxCol, newBoxRow) ) {
+                        continue;
+                    }
+                    Node n = this.ChildNode();
+                    n.action = c;
+                    n.getAgent().setPosition(agentPos);
+                    n.boxes.get(boxIdx).setPosition(new Position(newBoxCol, newBoxRow));
+                    expandedNodes.add(n);
+                    break;
                 }
-                int boxIdx = boxes.indexOf(b.get());
-                int newBoxRow = newAgentRow + dirToRowChange(c.dir2);
-                int newBoxCol = newAgentCol + dirToColChange(c.dir2);
-                // .. and that new cell of box is free
-                if ( !cellIsFree(newBoxCol, newBoxRow) ) {
-                    continue;
-                }
-                Node n = this.ChildNode();
-                n.action = c;
-                n.getAgent().setPosition(agentPos);
-                n.boxes.get(boxIdx).setPosition(new Position(newBoxCol, newBoxRow));
-                expandedNodes.add(n);
-            } else if ( c.actType == type.Pull ) {
-                // Cell is free where agent is going
-                if ( !cellIsFree(newAgentCol, newAgentRow) ) {
-                    continue;
-                }
-                int boxRow = agent.getPosition().getY() + dirToRowChange(c.dir2);
-                int boxCol = agent.getPosition().getX() + dirToColChange(c.dir2);
-                Position pos = new Position(boxCol, boxRow);
+                case Pull: {
+                    // Cell is free where agent is going
+                    if ( !cellIsFree(newAgentCol, newAgentRow) ) {
+                        continue;
+                    }
+                    int boxRow = agent.getPosition().getY() + dirToRowChange(c.dir2);
+                    int boxCol = agent.getPosition().getX() + dirToColChange(c.dir2);
+                    Position pos = new Position(boxCol, boxRow);
 
-                // .. and there's a box in "dir2" of the agent
-                Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
-                if ( !b.isPresent() || !b.get().isMovable() ) {
-                    continue;
+                    // .. and there's a box in "dir2" of the agent
+                    Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
+                    if ( !b.isPresent() || !b.get().isMovable() ) {
+                        continue;
+                    }
+                    int boxIdx = boxes.indexOf(b.get());
+
+                    Node n = this.ChildNode();
+                    n.action = c;
+                    n.getAgent().setPosition(agentPos);
+                    n.boxes.get(boxIdx).setPosition(agent.getPosition());
+
+                    expandedNodes.add(n);
+                    break;
                 }
-                int boxIdx = boxes.indexOf(b.get());
-
-                Node n = this.ChildNode();
-                n.action = c;
-                n.getAgent().setPosition(agentPos);
-                n.boxes.get(boxIdx).setPosition(agent.getPosition());
-
-                expandedNodes.add(n);
             }
         }
         Collections.shuffle(expandedNodes, rnd);

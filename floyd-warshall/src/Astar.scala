@@ -2,8 +2,9 @@ import FibonacciHeap.Entry
 import searchclient.Position
 
 import scala.collection.immutable.HashSet
+
 /**
-  * Created by miniwolf on 08-04-2016.
+  * @author miniwolf and Maciej
   */
 object Astar {
   def heuristic(start: Position, goal: Position) = {
@@ -26,68 +27,55 @@ object Astar {
     }
   }
 
-  def search(edges: Map[Position, List[Position]], start: Position, goal: Position): List[Position] = {
+  def search(edges: Map[Position, List[Position]], start: Position, goal: Position, boxSet: HashSet[Position]): List[Position] = {
     val eKeys = edges.keySet
     if ( !eKeys.contains(start) || !eKeys.contains(goal) ) {
       return List()
     }
     val startNode = new Node(null, start, 0)
     val openSet = new FibonacciHeap[Node]()
-    var closedSet = new HashSet[Position]()
+    val closedSet = new HashSet[Position]()
     var openEntryMap = Map[Node, Entry[Node]]()
     openEntryMap += (startNode -> openSet.enqueue(startNode, heuristic(start, goal)))
 
-    while ( !openSet.isEmpty ) {
-      val leafNode: Node = openSet.dequeueMin().getValue
-      if ( leafNode.position.equals(goal) ) {
-        return leafNode.extractPath(List())
-      }
-
-      closedSet += leafNode.position
-      edges(leafNode.position).filter(n => !closedSet.contains(n)
-                                           && !openEntryMap.keySet.contains(new Node(null, n, 0)))
-                              .foreach { case child =>
-        val childNode = new Node(leafNode, child, leafNode.gValue + 1)
-        openEntryMap += (childNode -> openSet.enqueue(childNode, childNode.gValue + heuristic(child, goal)))
-      }
-    }
-    List[Position]()
-  }
-
-  def search2(edges: Map[Position, List[Position]], start: Position, goal: Position, boxSet: HashSet[Position]): List[Position] = {
-    val eKeys = edges.keySet
-    if ( !eKeys.contains(start) || !eKeys.contains(goal) ) {
-      return List()
-    }
-    val startNode = new Node(null, start, 0)
-    val openSet = new FibonacciHeap[Node]()
-    var closedSet = new HashSet[Position]()
-    var openEntryMap = Map[Node, Entry[Node]]()
-    openEntryMap += (startNode -> openSet.enqueue(startNode, heuristic(start, goal)))
-
-    while ( !openSet.isEmpty ) {
-      val leafNode: Node = openSet.dequeueMin().getValue
-      if ( leafNode.position.equals(goal) ) {
-        return leafNode.extractPath(List())
-      }
-
-      closedSet += leafNode.position
-      edges(leafNode.position).filter(n => !closedSet.contains(n)
-        && !openEntryMap.keySet.contains(new Node(null, n, 0)))
-        .foreach { case child =>
-          val pathCost = if ( boxSet.contains(child) ) 2 else 1
-          val childNode = new Node(leafNode, child, leafNode.gValue + pathCost)
-          openEntryMap += (childNode -> openSet.enqueue(childNode, childNode.gValue + heuristic(child, goal)))
+    def searchInternal(openEntryMap: Map[Node, Entry[Node]], closedSet: HashSet[Position],
+                       openSet: FibonacciHeap[Node], edges: Map[Position, List[Position]],
+                       goal: Position): List[Position] = {
+      def addChildren(children: List[Position], openEntryMap: Map[Node, Entry[Node]], leafNode: Node,
+                      openSet: FibonacciHeap[Node], goal: Position, boxSet: HashSet[Position]): Map[Node, Entry[Node]] = {
+        children match {
+          case Nil => openEntryMap
+          case child :: cdr =>
+            val pathCost = if ( boxSet.contains(child) ) { 2 } else { 1 }
+            val childNode = new Node(leafNode, child, leafNode.gValue + pathCost)
+            val newOpenEntryMap = openEntryMap + (childNode -> openSet.enqueue(childNode, childNode.gValue + heuristic(child, goal)))
+            addChildren(cdr, newOpenEntryMap, leafNode, openSet, goal, boxSet)
         }
+      }
+
+      openSet match {
+        case _ if openSet.isEmpty => List[Position]()
+        case _ =>
+          openSet.dequeueMin().getValue match {
+            case leaf if leaf.position.equals(goal) => leaf.extractPath(List())
+            case leafNode =>
+              val newClosedSet = closedSet + leafNode.position
+              val children = edges(leafNode.position).filter(n => !closedSet.contains(n)
+                && !openEntryMap.keySet.contains(new Node(null, n, 0)))
+              val newOpenEntryMap = addChildren(children, openEntryMap, leafNode, openSet, goal, boxSet)
+              searchInternal(newOpenEntryMap, newClosedSet, openSet, edges, goal)
+          }
+      }
     }
-    List[Position]()
+    searchInternal(openEntryMap, closedSet, openSet, edges, goal)
   }
 
   def search3(edges: Map[Position, List[Position]], start: Position, path: HashSet[Position], depth: Int): Position = {
     val eKeys = edges.keySet
-    if ( !eKeys.contains(start)) {
+    if ( !eKeys.contains(start) ) {
       return null
     }
+
     var foundNodes = List[Position]()
     val startNode = new Node(null, start, 0)
     val openSet = new FibonacciHeap[Node]()
@@ -98,25 +86,25 @@ object Astar {
     while ( !openSet.isEmpty ) {
       val leafNode: Node = openSet.dequeueMin().getValue
       if ( !path.contains(leafNode.position) ) {
-        if (foundNodes.size < depth) {
+        if ( foundNodes.size < depth ) {
           foundNodes = leafNode.position :: foundNodes
-        }
-        else {
+        } else {
           return leafNode.position
         }
       }
 
       closedSet += leafNode.position
       edges(leafNode.position).filter(n => !closedSet.contains(n)
-        && !openEntryMap.keySet.contains(new Node(null, n, 0)))
-        .foreach { case child =>
-          val childNode = new Node(leafNode, child, leafNode.gValue + 1)
-          openEntryMap += (childNode -> openSet.enqueue(childNode, childNode.gValue))
-        }
+                                        && !openEntryMap.keySet.contains(new Node(null, n, 0)))
+                              .foreach { case child =>
+        val childNode = new Node(leafNode, child, leafNode.gValue + 1)
+        openEntryMap += (childNode -> openSet.enqueue(childNode, childNode.gValue))
+      }
     }
-    if (foundNodes.nonEmpty)
+    if ( foundNodes.nonEmpty ) {
       foundNodes.head
-    else
+    } else {
       null
+    }
   }
 }

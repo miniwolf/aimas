@@ -13,9 +13,9 @@ object PathFinding {
     node.boxes.foreach(box => box.setMovable(false))
 
     val (_, edges) = Graph.construct(node)
-    val boxPath = Astar.search(edges, findBox.getPosition, goalPos) match {
+    val boxPath = findPath2(node, findBox, goalPos, edges) match {
       case Nil =>
-        val path = Astar.search(ignoreBoxEdges, findBox.getPosition, goalPos)
+        val path = findPath2(node, findBox, goalPos, ignoreBoxEdges)
         val issues = node.boxes.filter(box => path.contains(box.getPosition))
         val newPath = findPathWithLimits(path, issues.toList, node, findBox, goalPos)
         issues.foreach(box => Node.walls.remove(box.getPosition))
@@ -30,7 +30,7 @@ object PathFinding {
 
   def findPath2(node: Node, findBox: Box, goalPos: Position, edges: Map[Position, List[Position]]): List[Position] = {
     val hashSet = HashSet() ++ node.boxes.map(box => box.getPosition)
-    Astar.search2(edges, findBox.getPosition, goalPos, hashSet)
+    Astar.search(edges, findBox.getPosition, goalPos, hashSet)
   }
 
   def findPathWithLimits(path: List[Position], remainingBoxes: List[Box], node: Node, findBox: Box,
@@ -42,7 +42,7 @@ object PathFinding {
         val emptyState = new Node(node.parent)
         emptyState.setAgent(new Agent(node.getAgent.getPosition, 0))
         val (_, edges) = Graph.construct(emptyState)
-        Astar.search(edges, findBox.getPosition, goal) match {
+        findPath2(node, findBox, goal, edges) match {
           case Nil =>
             Node.walls.remove(box.getPosition)
             findPathWithLimits(path, cdr, node, findBox, goal)
