@@ -105,7 +105,7 @@ object Solution {
             List()
           }
 
-          solveReduced(goalPos, goalMatches, dangerZone, solvedGoals, node, edges, threshold) match {
+          solveReduced(goalPos, goalMatches, dangerZone, solvedGoals, node, edges, threshold, 1) match {
             case null => solveBestGoal(cdr, bestSoFar, bestSoFar._2.length, node, goalMatches, solvedGoals, solutionLength, goalsWithBoxes)
             case newSolution =>
               if ( bestSoFar._2.isEmpty || newSolution.length < bestSoFar._2.length ) {
@@ -128,7 +128,7 @@ object Solution {
     diff.filter(p => !p.equals(goalPos))
   }
 
-  def removeBoxesFromPath(list: List[Box], solutionList: List[Node], goal: Position, node: Node, path: HashSet[Position], depth: Int): (List[Node], Node) = {
+  def removeBoxesFromPath(list: List[Box], solutionList: List[Node], goal: Position, node: Node, path: HashSet[Position], depth: Int, boxId: Int): (List[Node], Node) = {
     list match {
       case Nil => (solutionList, node)
       case box :: cdr =>
@@ -137,7 +137,7 @@ object Solution {
         lockedNode.boxes.foreach(b => b.setMovable(false))
         lockedNode.boxes.remove(box)
 
-        val (_, edges) = Graph.construct(lockedNode)
+        val (vertices, edges) = Graph.construct(lockedNode)
         val x = box.getPosition.getX
         val y = box.getPosition.getY
         val testPositions = List[Position](new Position(x+1, y), new Position(x-1, y), new Position(x, y+1), new Position(x, y-1))
@@ -151,8 +151,11 @@ object Solution {
         Node.goals.put(tempBoxGoal, Character.toLowerCase(box.getCharacter))
         lockedNode.boxes.add(box)
 
+        val realGoalBox = node.boxes.find(b => b.getId == boxId).get
+        val dangerZones = findDangerousPositions(vertices, edges, tempBoxGoal, realGoalBox, box.getPosition, lockedNode.ChildNode())
+
         val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(Map(tempBoxGoal -> box.getId), edges))
-        val solution: util.LinkedList[Node] = Search.search2(strategy, lockedNode, 200000)
+        val solution: util.LinkedList[Node] = Search.search2(strategy, lockedNode, 200000, dangerZones)
 
         Node.goals.put(goal, removedChar)
         Node.goals.remove(tempBoxGoal)
@@ -166,7 +169,7 @@ object Solution {
         }
         val newNode = solution.last.ChildNode()
         newNode.parent = null
-        removeBoxesFromPath(cdr, solutionList ++ solution.toList, goal, newNode, path, depth)
+        removeBoxesFromPath(cdr, solutionList ++ solution.toList, goal, newNode, path, depth, boxId)
     }
   }
 
@@ -174,9 +177,10 @@ object Solution {
     node.boxes.filter(box => path.contains(box.getPosition) && box.getId != boxId).toList match {
       case Nil => (List(), node)
       case boxes =>
+        val debugBoxes = boxes
         val list: List[Box] = path.map(pos => boxes.filter(box => box.getPosition.equals(pos)))
                                   .filter(list => list.nonEmpty).map(list => list.head)
-        removeBoxesFromPath(list, List(), goal, node, HashSet() ++ path, depth)
+        removeBoxesFromPath(list, List(), goal, node, HashSet() ++ path, depth, boxId)
     }
   }
 
@@ -189,7 +193,7 @@ object Solution {
           case (null, _) => reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth + 1, solution)
           case (agentSolution, _) if agentSolution.length > threshold => (null, node)
           case (agentSolution, agentNode) =>
-            reducePath(boxPath, agentNode, boxId, goal, 1) match {
+            reducePath(boxPath, agentNode, boxId, goal, depth) match {
               case (null, _) => reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth + 1, solution)
               case (boxSolution, _) if boxSolution.length + agentSolution.length > threshold => (null, node)
               case (boxSolution, boxNode) =>
@@ -207,23 +211,20 @@ object Solution {
   }
 
   def solveReduced(goal: Position, goalMatch: Map[Position, Int], dangerZone: List[Position],
-                   solved: List[Position], node: Node, edges: Map[Position, List[Position]], threshold: Int): List[Node] = {
+                   solved: List[Position], node: Node, edges: Map[Position, List[Position]],
+                   threshold: Int, depth: Int): List[Node] = {
     val savedGoals = Node.goals.filter { case (goalPos, goalChar) => !goal.equals(goalPos) }.toMap
     savedGoals.foreach(goal => Node.goals.remove(goal._1))
     var solution = List[Node]()
     var currentNode = node
+    val boxId = goalMatch.get(goal).get
+    val box = node.boxes.filter(box => box.getId == boxId).last
+    val boxPath = PathFinding.findPath2(node, box, goal, edges).reverse
+    val agentPath = PathFinding.findPath2(node, box, node.getAgent.getPosition, edges)
     if ( node.boxes.length != 1 ) {
-      val boxId = goalMatch.get(goal).get
-      val box = node.boxes.filter(box => box.getId == boxId).last
-      val boxPath = PathFinding.findPath2(node, box, goal, edges).reverse
-      val agentPath = PathFinding.findPath2(node, box, node.getAgent.getPosition, edges)
-      node.boxes.filter(box => !boxPath.contains(box.getPosition)
-                            && !agentPath.contains(box.getPosition)
-                            && box.getId != boxId)
-                .foreach(box => box.setMovable(false))
       val solvedBoxes = goalMatch.filter(p => solved.contains(p._1)).values
       node.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
-      val (reducedSolution, reducedNode) = reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, 1, null)
+      val (reducedSolution, reducedNode) = reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth, null)
       if ( reducedSolution == null ) {
         resetNode(savedGoals, node)
         return null
@@ -231,14 +232,17 @@ object Solution {
       currentNode = reducedNode
       solution = reducedSolution
     }
-
+    currentNode.boxes.filter(box => !boxPath.contains(box.getPosition)
+      && !agentPath.contains(box.getPosition)
+      && box.getId != boxId)
+      .foreach(box => box.setMovable(false))
     val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(goalMatch, edges))
     val newSolution = Search.search(strategy, currentNode, threshold, dangerZone)
-
     resetNode(savedGoals, node)
-    if ( newSolution == null ) {
-      return null
+    newSolution match {
+      case null => solveReduced(goal, goalMatch, dangerZone, solved, node, edges, threshold, depth + 1)
+      case list if list.isEmpty => null
+      case _ => solution ++ newSolution
     }
-    solution ++ newSolution
   }
 }

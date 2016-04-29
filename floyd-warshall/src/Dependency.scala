@@ -58,7 +58,9 @@ object Dependency {
       goals match {
         case Nil => dependencies
         case goal :: cdr =>
-          PathFinding.findPath2(initialState, initialState.boxes.find(box => box.getId == goalMatch(goal)).get, goal, edges) match {
+          val box = initialState.boxes.find(box => box.getId == goalMatch(goal)).get
+          PathFinding.findPath2(initialState, box, goal, edges) match {
+            case null | Nil if box.getPosition.equals(permutation) => findDependencies(dependencies, cdr)
             case null | Nil => findDependencies(goal :: dependencies, cdr)
             case _ => findDependencies(dependencies, cdr)
           }

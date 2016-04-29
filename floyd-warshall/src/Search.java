@@ -14,7 +14,7 @@ public class Search {
     public static LinkedList<Node> search(Strategy.AdvancedStrategy strategy, Node initialState, int threshold, List<Position> dangerZone) throws IOException {
         System.err.format("Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(initialState);
-
+        boolean reachedThreshold = false;
         int iterations = 0;
         while ( true ) {
             if ( SearchClient.Memory.shouldEnd() ) {
@@ -23,7 +23,11 @@ public class Search {
             }
 
             if ( strategy.frontierIsEmpty() ) {
-                return null;
+                if ( reachedThreshold ) {
+                    return new LinkedList<>();
+                } else {
+                    return null;
+                }
             }
 
             Node leafNode = strategy.getAndRemoveLeaf();
@@ -36,6 +40,7 @@ public class Search {
             }
 
             if ( leafNode.g() > threshold ) {
+                reachedThreshold = true;
                 continue;
             }
 
@@ -50,7 +55,8 @@ public class Search {
             iterations++;
         }
     }
-    public static LinkedList<Node> search2(Strategy.AdvancedStrategy strategy, Node initialState, int threshold) throws IOException {
+    public static LinkedList<Node> search2(Strategy.AdvancedStrategy strategy, Node initialState,
+                                           int threshold, List<Position> dangerZone) throws IOException {
         System.err.format("Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(initialState);
 
@@ -67,7 +73,7 @@ public class Search {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if ( leafNode.isGoalState2()) {
+            if ( leafNode.isGoalState(dangerZone)) {
                 System.err.println("\nSummary for " + strategy);
                 System.err.println(strategy.searchStatus());
                 System.err.println("\n");

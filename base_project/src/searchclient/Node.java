@@ -213,7 +213,15 @@ public class Node {
         if ( getClass() != obj.getClass() )
             return false;
         Node other = (Node) obj;
-        return agent.equals(other.agent) && boxes.equals(other.boxes);
+        if ( boxes.size() != other.boxes.size() ) {
+            return false;
+        }
+        for ( Box box : boxes ) {
+            if ( !other.boxes.contains(box) ) {
+                return false;
+            }
+        }
+        return agent.equals(other.agent);
     }
 
     public String toString() {
