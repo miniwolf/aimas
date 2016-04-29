@@ -13,8 +13,7 @@ import scala.collection.immutable.Map
 object LearnClient extends App {
   override def main(args: Array[String]) {
     val serverMessages: BufferedReader = new BufferedReader(new InputStreamReader(System.in))
-    System.err
-      .println("SearchClient initializing. I am sending this using the error output stream.")
+    System.err.println("SearchClient initializing. I am sending this using the error output stream.")
 
     val lines: java.util.List[String] = new java.util.ArrayList[String]
     var line: String = serverMessages.readLine
