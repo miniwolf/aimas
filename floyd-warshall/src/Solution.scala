@@ -128,7 +128,8 @@ object Solution {
     diff.filter(p => !p.equals(goalPos))
   }
 
-  def removeBoxesFromPath(list: List[Box], solutionList: List[Node], goal: Position, node: Node, path: HashSet[Position], depth: Int, boxId: Int): (List[Node], Node) = {
+  def removeBoxesFromPath(list: List[Box], solutionList: List[Node], goal: Position, node: Node,
+                          path: HashSet[Position], depth: Int, boxId: Int): (List[Node], Node) = {
     list match {
       case Nil => (solutionList, node)
       case box :: cdr =>
@@ -136,6 +137,16 @@ object Solution {
         lockedNode.parent = null
         lockedNode.boxes.foreach(b => b.setMovable(false))
         lockedNode.boxes.remove(box)
+
+        val empty = new Node(lockedNode.parent)
+        empty.setAgent(new Agent(lockedNode.getAgent.getPosition, 0))
+        val (_, emptyEdges) = Graph.construct(empty)
+        val pathToBox = PathFinding.findPath2(lockedNode, box, lockedNode.getAgent.getPosition, emptyEdges)
+        val realGoalBox = node.boxes.find(b => b.getId == boxId).get
+        val containsGoalBox = pathToBox.contains(realGoalBox.getPosition)
+        if ( containsGoalBox ) {
+          lockedNode.boxes.remove(realGoalBox)
+        }
 
         val (vertices, edges) = Graph.construct(lockedNode)
         val x = box.getPosition.getX
@@ -150,8 +161,10 @@ object Solution {
         val removedChar = Node.goals.remove(goal)
         Node.goals.put(tempBoxGoal, Character.toLowerCase(box.getCharacter))
         lockedNode.boxes.add(box)
+        if ( containsGoalBox ) {
+          lockedNode.boxes.add(realGoalBox)
+        }
 
-        val realGoalBox = node.boxes.find(b => b.getId == boxId).get
         val dangerZones = findDangerousPositions(vertices, edges, tempBoxGoal, realGoalBox, box.getPosition, lockedNode.ChildNode())
 
         val strategy = new AdvancedStrategy(new AdvancedHeuristic.AStar(Map(tempBoxGoal -> box.getId), edges))
@@ -177,7 +190,6 @@ object Solution {
     node.boxes.filter(box => path.contains(box.getPosition) && box.getId != boxId).toList match {
       case Nil => (List(), node)
       case boxes =>
-        val debugBoxes = boxes
         val list: List[Box] = path.map(pos => boxes.filter(box => box.getPosition.equals(pos)))
                                   .filter(list => list.nonEmpty).map(list => list.head)
         removeBoxesFromPath(list, List(), goal, node, HashSet() ++ path, depth, boxId)
