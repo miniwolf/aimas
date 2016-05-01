@@ -15,7 +15,7 @@ The library contains:
   * Base project (Handin 1)
   * Algorithms for solving the problem including (BFS, DFS, A*, WA* and the Greedy approach).
 
-###3. What to do now?
+###3. What to do now?MASters
 
 Work in progress:
   * Heuristic thoughts and experiments
@@ -33,12 +33,12 @@ Work in progress:
 |Dillema|
 |DinMor|
 |Humans|
-|JasonFour|368|334|1.068|
-|JasonX|719|?|7.615
-|Masters|1053|?|2.295|
+|JasonFour|354|334|1.068|
+|JasonX|-|719|7.615
+|Masters|1055|1053|2.295|
 |PHOBAR|
 |schwenke|
-|Skynet|577|?|27.128|
+|Skynet|589|577|27.128|
 #####Easy
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|
@@ -50,18 +50,18 @@ Work in progress:
 |Ryther|170|164|1.77|
 |sampdoria|57|37|0.293|
 #####Medium
-|Level|Current Length|Known Optimal|Time(s)|
+|Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
 |Alpha|
 |Ateam|256|239|0.707|
-|BullFight|252|?|6.823|
+|BullFight|288|252|6.823|
 |DCN|852|852|9.853|
-|FOAM|108|?|3.666|
+|FOAM|118|108|3.666|
 |holdkaeft|200|188|1.005|
 |null|109|91|1.015|
 |Talos|1380|1380|59.501|
-|TeamNoOp|114|?|0.567|
-|wallE|412|390|4.222|
+|TeamNoOp|130|114|0.567|
+|wallE|402|390|4.222|
 #####Short Solution
 |Level|Current Length|Known Optimal|Time(s)|
 |:---|:---|:---|:---|

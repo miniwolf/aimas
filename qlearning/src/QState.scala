@@ -6,7 +6,7 @@ import scala.collection.JavaConversions._
   */
 class QState(val instance: Node, val reward: Float) {
   @inline
-  final def isGoal: Boolean = instance.isGoalState
+  final def isGoal: Boolean = instance.isGoalState(List())
 
   override def toString: String =
     s"Reward: $reward - Instance:\n ${instance.toString}"
