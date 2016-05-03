@@ -15,7 +15,7 @@ The library contains:
   * Base project (Handin 1)
   * Algorithms for solving the problem including (BFS, DFS, A*, WA* and the Greedy approach).
 
-###3. What to do now?MASters
+###3. What to do now?
 
 Work in progress:
   * Heuristic thoughts and experiments
@@ -33,18 +33,19 @@ Work in progress:
 |Dillema|
 |DinMor|
 |Humans|
-|JasonFour|354|334|1.068|
-|JasonX|-|719|7.615
-|Masters|1055|1053|2.295|
+|JasonFour|336|334|1.091|
+|JasonX|771|719|8.424|
+|Masters|1083|1053|2.717|
 |PHOBAR|
 |schwenke|
-|Skynet|589|577|27.128|
+|Skynet|577|?|27.128|
+|WatsOn|940|940|16.692|
 #####Easy
-|Level|Current Length|Known Optimal|Time(s)|
+|Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
-|bruteforce|44|33|0.45|
-|Crunch|107|98|0.401|
-|DeliRobot|81|75|0.359|
+|bruteforce|33|33|0.394|
+|Crunch|101|98|0.415|
+|DeliRobot|75|75|0.66|
 |Firefly|82|60|0.433|
 |group42|375|375|2.933|
 |Ryther|170|164|1.77|
@@ -53,28 +54,27 @@ Work in progress:
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
 |Alpha|
-|Ateam|256|239|0.707|
-|BullFight|288|252|6.823|
-|DCN|852|852|9.853|
-|FOAM|118|108|3.666|
-|holdkaeft|200|188|1.005|
-|null|109|91|1.015|
-|Talos|1380|1380|59.501|
-|TeamNoOp|130|114|0.567|
-|wallE|402|390|4.222|
+|Ateam|256|239|1.183|
+|BullFight|282|252|2.298|
+|DCN|852|852|9.737|
+|FOAM|106|?|2.96|
+|holdkaeft|204|188|1.371|
+|null|113|91|0.525|
+|Talos|1378|1380|18.904|
+|TeamNoOp|124|114|1.329|
+|wallE|412|390|4.222|
 #####Short Solution
-|Level|Current Length|Known Optimal|Time(s)|
+|Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
 |AgentSharp|82|?|1.179
-|LionFish|40|40|0.465
-|RageQuit|26|?|0.399|
+|LionFish|40|40|0.543
+|RageQuit|28|26|0.656|
 #####Long Solution
-|Level|Current Length|Known Optimal|Time(s)|
+|Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
 |EpicPhail|
-|WatsOn|940|940|16.692|
 #####Other
-|Level|Current Length|Known Optimal|Time(s)|
+|Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
 |sjw|81|?|0.748
 |SAD1|19|19|0.321|
@@ -84,3 +84,6 @@ Work in progress:
 |friendOfDFS|10|10|0.609|
 |a|83|83|0.466|
 |b|
+|c|
+|FortyTwoHard|
+|FortyTwoMedium|

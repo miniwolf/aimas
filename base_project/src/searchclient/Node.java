@@ -31,6 +31,11 @@ public class Node {
         g = parent == null ? 0 : parent.g() + 1;
     }
 
+    public static void clear() {
+        walls.clear();
+        goals.clear();
+    }
+
     public void setAgent(Agent agent) {
         this.agent = agent;
     }
@@ -64,20 +69,6 @@ public class Node {
             }
         }
         return true;
-    }
-
-    public boolean isGoalState2() {
-        if ( !isGoalState(new ArrayList<>()) ) {
-            return false;
-        }
-        return true;
-        /*List<Box> collect = parent.boxes.stream().filter(Box::isMovable).collect(Collectors.toList());
-        for ( Box box : collect ) {
-            if ( box.getPosition().equals(agent.getPosition()) ) {
-                return true;
-            }
-        }
-        return false;*/
     }
 
     public ArrayList<Node> getExpandedNodes() {

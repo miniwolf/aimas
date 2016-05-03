@@ -50,6 +50,27 @@ object LearnClient extends App {
     }
   }
 
+  def test(lines: List[String]) = {
+    System.err.println("SearchClient initializing. I am sending this using the error output stream.")
+
+    Node.MAX_COLUMN = lines.stream().mapToInt(new ToIntFunction[String] {
+      override def applyAsInt(value: String): Int = value.length
+    }).max.getAsInt
+    Node.MAX_ROW = lines.size
+    val client: SearchClient = new SearchClient(lines)
+    val startTime = System.currentTimeMillis()
+    val learnClient = new LearnClient(client)
+    val (_, edges) = Graph.construct(learnClient.emptyStartState)
+    val goalMatches = matchGoalsWithBoxes(learnClient.startState, edges)
+    val goalList = Node.goals.map { case (goalPos, goalChar) => goalPos -> goalChar }.toMap
+
+    val solution: List[Node] = Solution.findSolution(goalList.keys.toList, goalMatches, List(), List(),
+                                                     learnClient.startState)
+    val timeSpent = (System.currentTimeMillis - startTime) / 1000f
+    println(s"Summary: Time: $timeSpent\t ${Memory.stringRep()}")
+    println(s"SolutionLength: ${solution.length}")
+  }
+
   def matchGoalsWithBoxes(initialState: Node, edges: Map[Position, List[Position]]): Map[Position, Int] = {
     var goalMatch = Map[Position, Int]() // Goal position, Box
     Node.goals.foreach { case (goalPos, goalChar) =>

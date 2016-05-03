@@ -1,19 +1,17 @@
-/**
+package client; /**
  * Created by miniwolf on 03-04-2016.
  */
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
 
+import client.heuristic.Heuristic;
 import searchclient.SearchClient.Memory;
 import searchclient.Node;
 
 public abstract class Strategy {
     public HashSet<Node> explored;
     public long startTime = System.currentTimeMillis();
-    private AdvancedHeuristic.AStar heuristic;
+    private Heuristic heuristic;
 
     public Strategy() {
         explored = new HashSet<>();
@@ -51,7 +49,7 @@ public abstract class Strategy {
 
     public abstract String toString();
 
-    public AdvancedHeuristic.AStar getHeuristic() {
+    public Heuristic getHeuristic() {
         return heuristic;
     }
 

@@ -1,23 +1,14 @@
-import java.util.Comparator
+package client.heuristic
 
+import client.PathFinding
 import searchclient.{Box, Node, Position}
 
 import scala.collection.JavaConversions._
 
 /**
-  * Created by miniwolf on 31-03-2016.
+  * Created by miniwolf on 03-05-2016.
   */
-object AdvancedHeuristic {
-  class AStar(goalMatch: Map[Position, Int], edges: Map[Position, List[Position]]) extends Heuristic(goalMatch, edges) {
-    def f(n: Node) = n.g + h(n)
-
-    override def toString = "A* evaluation"
-  }
-}
-
-abstract class Heuristic(goalMatch: Map[Position, Int], edges: Map[Position, List[Position]]) extends Comparator[Node] {
-  def compare(n1: Node, n2: Node): Int = f(n1) - f(n2)
-
+class AdvancedHeuristic(goalMatch: Map[Position, Int], edges: Map[Position, List[Position]]) extends Heuristic {
   def h(n: Node): Int = {
     var value = 0
     Node.goals.foreach { case (goalPos, _) =>
@@ -53,6 +44,4 @@ abstract class Heuristic(goalMatch: Map[Position, Int], edges: Map[Position, Lis
       path
     }
   }
-
-  def f(n: Node): Int
 }

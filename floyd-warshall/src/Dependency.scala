@@ -2,6 +2,7 @@ import searchclient.{Agent, Node, Position}
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.Map
+import scala.collection.JavaConversions._
 
 /**
   * Created by miniwolf on 26-04-2016.
