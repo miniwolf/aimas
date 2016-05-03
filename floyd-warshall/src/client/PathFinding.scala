@@ -1,7 +1,8 @@
+package client
+
 import searchclient.{Agent, Box, Node, Position}
 
-import scala.collection.immutable.{HashSet, Map}
-import scala.collection.JavaConversions._
+import scala.collection.immutable.Map
 
 /**
   * Created by miniwolf on 26-04-2016.

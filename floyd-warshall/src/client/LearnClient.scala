@@ -1,3 +1,5 @@
+package client
+
 import java.io.{BufferedReader, InputStreamReader}
 import java.util.function.ToIntFunction
 

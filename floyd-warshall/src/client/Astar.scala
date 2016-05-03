@@ -1,4 +1,6 @@
-import FibonacciHeap.Entry
+package client
+
+import client.FibonacciHeap.Entry
 import searchclient.Position
 
 import scala.collection.immutable.HashSet

@@ -53,7 +53,7 @@ public abstract class Strategy {
         return heuristic;
     }
 
-    // Ex 3: Best-first Search uses a priority queue (Java contains no implementation of a Heap data structure)
+    // Ex 3: Best-first client.Search uses a priority queue (Java contains no implementation of a Heap data structure)
     public static class AdvancedStrategy extends Strategy {
         private PriorityQueue<Node> frontier;
         private Heuristic heuristic;
@@ -85,11 +85,11 @@ public abstract class Strategy {
         }
 
         public String toString() {
-            return "Best-first Search (PriorityQueue) using " + heuristic.toString();
+            return "Best-first client.Search (PriorityQueue) using " + heuristic.toString();
         }
     }
 
-    // Ex 3: Best-first Search uses a priority queue (Java contains no implementation of a Heap data structure)
+    // Ex 3: Best-first client.Search uses a priority queue (Java contains no implementation of a Heap data structure)
     public static class PathStrategy extends Strategy {
         private PriorityQueue<Node> frontier;
         private PathHeuristic heuristic;
@@ -121,19 +121,19 @@ public abstract class Strategy {
         }
 
         public String toString() {
-            return "Best-first Search (PriorityQueue) using " + heuristic.toString();
+            return "Best-first client.Search (PriorityQueue) using " + heuristic.toString();
         }
     }
 
-    /*public static class PathStrategy extends Strategy {
-        private FibonacciHeap<Node> frontier;
-        private PathHeuristic heuristic;
-        private Map<Node, FibonacciHeap.Entry<Node>> entryMap = new HashMap<>();
+    /*public static class PathStrategy extends client.Strategy {
+        private client.FibonacciHeap<Node> frontier;
+        private client.PathHeuristic client.heuristic;
+        private Map<Node, client.FibonacciHeap.Entry<Node>> entryMap = new HashMap<>();
 
-        public PathStrategy(PathHeuristic h) {
+        public PathStrategy(client.PathHeuristic h) {
             super();
-            heuristic = h;
-            frontier = new FibonacciHeap<>();
+            client.heuristic = h;
+            frontier = new client.FibonacciHeap<>();
         }
 
         public Node getAndRemoveLeaf() {
@@ -141,7 +141,7 @@ public abstract class Strategy {
         }
 
         public void addToFrontier(Node n) {
-            entryMap.put(n, frontier.enqueue(n, heuristic.f(n)));
+            entryMap.put(n, frontier.enqueue(n, client.heuristic.f(n)));
         }
 
         public int countFrontier() {
@@ -157,7 +157,7 @@ public abstract class Strategy {
         }
 
         public String toString() {
-            return "Path Search (PriorityQueue)";
+            return "Path client.Search (PriorityQueue)";
         }
     }*/
 }

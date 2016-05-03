@@ -50,12 +50,12 @@ public abstract class AbstractHeuristic implements Heuristic {
     private List<BitOp> operators;
 
     /**
-     * The boolean flag used to indicate if the heuristic is admissible.
+     * The boolean flag used to indicate if the client.heuristic is admissible.
      */
     private boolean isAdmissible;
 
     /**
-     * Create a new heuristic for a specified planning problem. By default the heuristic is
+     * Create a new client.heuristic for a specified planning problem. By default the client.heuristic is
      * considered as admissible.
      *
      * @param problem the problem to solve.
@@ -71,9 +71,9 @@ public abstract class AbstractHeuristic implements Heuristic {
     }
 
     /**
-     * Returns <code>true</code> if this heuristic is admissible.
+     * Returns <code>true</code> if this client.heuristic is admissible.
      *
-     * @return <code>true</code> if this heuristic is admissible.
+     * @return <code>true</code> if this client.heuristic is admissible.
      */
     @Override
     public boolean isAdmissible() {
@@ -81,7 +81,7 @@ public abstract class AbstractHeuristic implements Heuristic {
     }
 
     /**
-     * Marks the heuristic as admissible or not.
+     * Marks the client.heuristic as admissible or not.
      *
      * @param isAdmissible the admissible flag.
      */
@@ -90,7 +90,7 @@ public abstract class AbstractHeuristic implements Heuristic {
     }
 
     /**
-     * Returns the goal of the relaxed problem to solve in order to compute the heuristic.
+     * Returns the goal of the relaxed problem to solve in order to compute the client.heuristic.
      *
      * @return the goal.
      */
@@ -99,7 +99,7 @@ public abstract class AbstractHeuristic implements Heuristic {
     }
 
     /**
-     * Set the goal of the the relaxed problem to solve in order to compute the heuristic.
+     * Set the goal of the the relaxed problem to solve in order to compute the client.heuristic.
      *
      * @param goal the goal.
      */
@@ -110,7 +110,7 @@ public abstract class AbstractHeuristic implements Heuristic {
     }
 
     /**
-     * Returns the relevant facts of the relaxed problem to solve in order to compute the heuristic.
+     * Returns the relevant facts of the relaxed problem to solve in order to compute the client.heuristic.
      *
      * @return the relevant facts.
      */
@@ -119,7 +119,7 @@ public abstract class AbstractHeuristic implements Heuristic {
     }
 
     /**
-     * Returns the operators of the relaxed problem to solve in order to compute the heuristic.
+     * Returns the operators of the relaxed problem to solve in order to compute the client.heuristic.
      *
      * @return the operators.
      */

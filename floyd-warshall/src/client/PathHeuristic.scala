@@ -1,3 +1,5 @@
+package client
+
 import java.util.Comparator
 
 import searchclient.{Node, Position}

@@ -118,7 +118,7 @@ public abstract class RelaxedGraphHeuristic extends AbstractHeuristic {
     private int level;
 
     /**
-     * Creates a new RelaxedGraphHeuristic heuristic.
+     * Creates a new RelaxedGraphHeuristic client.heuristic.
      *
      * @param problem the problem to be solved.
      */
@@ -244,7 +244,7 @@ public abstract class RelaxedGraphHeuristic extends AbstractHeuristic {
     }
 
     /**
-     * Set the goal of the the relaxed problem to solve in order to compute the heuristic.
+     * Set the goal of the the relaxed problem to solve in order to compute the client.heuristic.
      *
      * @param goal the goal.
      * @throws NullPointerException if <code>goal == null</code>.
@@ -418,9 +418,9 @@ public abstract class RelaxedGraphHeuristic extends AbstractHeuristic {
     }
 
     /**
-     * Compute the sum heuristic.
+     * Compute the sum client.heuristic.
      *
-     * @return the sum heuristic value.
+     * @return the sum client.heuristic value.
      * @see Sum
      */
     protected final int getSumValue() {
@@ -437,9 +437,9 @@ public abstract class RelaxedGraphHeuristic extends AbstractHeuristic {
     }
 
     /**
-     * Compute the max heuristic.
+     * Compute the max client.heuristic.
      *
-     * @return max heuristic value.
+     * @return max client.heuristic value.
      * @see Max
      */
     protected final int getMaxValue() {
@@ -462,9 +462,9 @@ public abstract class RelaxedGraphHeuristic extends AbstractHeuristic {
     }
 
     /**
-     * Compute the relaxed plan heuristic value.
+     * Compute the relaxed plan client.heuristic value.
      *
-     * @return the relaxed plan heuristic value.
+     * @return the relaxed plan client.heuristic value.
      * @see FastForward
      */
     protected final int getRelaxedPlanValue() {
@@ -497,7 +497,7 @@ public abstract class RelaxedGraphHeuristic extends AbstractHeuristic {
             final BitVector nGk1 = gk1.getNegative();
             // Each positive goal at level k we need to find a resolver to support it
             for (int pg = pGk.nextSetBit(0); pg >= 0; pg = pGk.nextSetBit(pg + 1)) {
-                // Select the best resolver according to the difficulty heuristic
+                // Select the best resolver according to the difficulty client.heuristic
                 final int resolverIndex = this.select(this.effectsEdges[pg].getPositive(), k);
                 if (resolverIndex != -1) {
                     final BitExp pre = this.preconditions[resolverIndex];
@@ -569,7 +569,7 @@ public abstract class RelaxedGraphHeuristic extends AbstractHeuristic {
     }
 
     /**
-     * Select an effect according to the unconditional operators difficulty heuristic. The question
+     * Select an effect according to the unconditional operators difficulty client.heuristic. The question
      * is, which achiever should be choose when no NOOP is available ? It is certainly a good idea
      * to select an achiever whose preconditions seems to be "easy". From the graph building phase,
      * we can obtain a simple measure for the operatorsDifficulty of an action's preconditions as
@@ -580,7 +580,7 @@ public abstract class RelaxedGraphHeuristic extends AbstractHeuristic {
      * </ul>
      * The operatorsDifficulty of each action can be set when it is first inserted into the graph.
      * During plan extraction, facing a fact for which no NOOP is available, we then simply selected
-     * an achieving action with minimal operatorsDifficulty. This heuristic works well in situation
+     * an achieving action with minimal operatorsDifficulty. This client.heuristic works well in situation
      * where there are severals ways to achieve one fact. but some ways need less effort than
      * others.
      *

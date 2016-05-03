@@ -24,7 +24,7 @@ import fr.uga.pddl4j.util.BitExp;
 import fr.uga.pddl4j.util.BitState;
 
 /**
- * This class implements the SUM_ID heuristic. (for more details on this heuristic see Blai Bonet and
+ * This class implements the SUM_ID client.heuristic. (for more details on this client.heuristic see Blai Bonet and
  * Hector Geffner, Planning as Heuristic Search, Artificial Intelligence 129, 2001, Elsevier)
  * <p>
  * The principle of this heuristics function <i>h</i> is to resolved a relaxed the planning problem
@@ -41,12 +41,12 @@ import fr.uga.pddl4j.util.BitState;
  * <ul>
  * <li> <i>hsum(C)</i> = sum <i>gs(r)</i> for all <i>r</i> in <i>C</i> (additive costs)
  * </ul>
- * The heuristic assumes that subgoals are independent. This is not true in general as the
+ * The client.heuristic assumes that subgoals are independent. This is not true in general as the
  * achievement of some subgoals can make the achievement of the other subgoals more or less
- * difficult. For this reason, the additive heuristic is not admissible (i.e., it may overestimate
+ * difficult. For this reason, the additive client.heuristic is not admissible (i.e., it may overestimate
  * the true costs).
  * </p>
- * <b>Warning:</b> The sum heuristic is admissible.
+ * <b>Warning:</b> The sum client.heuristic is admissible.
  *
  * @author D. Pellier
  * @version 1.0 - 11.06.2010
@@ -55,7 +55,7 @@ import fr.uga.pddl4j.util.BitState;
 public final class Sum extends RelaxedGraphHeuristic {
 
     /**
-     * Creates a new <code>SUM_ID</code> heuristic for a specified planning problem.
+     * Creates a new <code>SUM_ID</code> client.heuristic for a specified planning problem.
      *
      * @param problem the planning problem.
      * @throws NullPointerException if <code>problem == null</code>.

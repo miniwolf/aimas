@@ -14,7 +14,7 @@ import java.util.List;
 public class Search {
     public static LinkedList<Node> search(Strategy.AdvancedStrategy strategy, Node initialState,
                                           int threshold, List<Position> dangerZone) throws IOException {
-        System.err.format("client.Search starting with strategy %s\n", strategy);
+        System.err.format("Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(initialState);
         boolean reachedThreshold = false;
         int iterations = 0;

@@ -24,14 +24,14 @@ import fr.uga.pddl4j.util.BitExp;
 import fr.uga.pddl4j.util.BitState;
 
 /**
- * This class implement the adjusted sum heuristic. This heuristic improves the sum heuristic by
+ * This class implement the adjusted sum client.heuristic. This client.heuristic improves the sum client.heuristic by
  * accounting for both negative and positive interactions among propositions. Since fully accounting
  * for either type of interaction alone can be as hard as the planning problem itself, we circumvent
  * this difficulty by using a phased approach. Specifically, we ignore one type of subgoal
  * interaction in order to account for the other, and then combine them both together.
  * <p>
  * Let <code>cost(p)</code> denote the cost of achieving a proposition according to the sum
- * heuristic. Note that it is simple to embed the sum heuristic value into the planning graph. We
+ * client.heuristic. Note that it is simple to embed the sum client.heuristic value into the planning graph. We
  * maintain a cost value for each new proposition. We are now interested in estimating the cost
  * <code>cost(S)</code> for achieving a set <code>S = {p1, p2, ..., pn}</code>. Suppose
  * <code>lev(p1) <= lev(p2) <= ... <= lev(pn)</code> where <code>lev(p)</code> is the level
@@ -65,7 +65,7 @@ import fr.uga.pddl4j.util.BitState;
  * </pre>
  * </p>
  * Note that <code>lev(pn) = max(lev(pi))</code> for all <code>pi</code> in <code>S</code> as
- * per our setup. Thus the estimate above is composed of the sum heuristic function
+ * per our setup. Thus the estimate above is composed of the sum client.heuristic function
  * <code>hsum = sum(cost(pi))</code> for all <code>pi</code> in <code>S</code> and an
  * additional cost <code>lev(S) := max(level(pi))</code> for all <code>pi</code> in
  * <code>S</code>. This difference is call the interaction degree among proposition in set
@@ -80,13 +80,13 @@ import fr.uga.pddl4j.util.BitState;
  * It should be noted that the notion of binary interaction degree is only a special case of the
  * above definition for a set of two propositions. In addition, when there is no negative
  * interaction among subgoals, <code>delta(S) = 0</code>, as expected. We have the following
- * heuristic:
+ * client.heuristic:
  * <p>
  * <pre>
  * hadjsum(S) := sum(cost(pi)) + delta(S) or all pi in S.
  * </pre>
  * </p>
- * <b>Warning:</b> The adjusted sum heuristic is not admissible.
+ * <b>Warning:</b> The adjusted sum client.heuristic is not admissible.
  *
  * @author D. Pellier
  * @version 1.0 - 10.06.2010
@@ -96,7 +96,7 @@ import fr.uga.pddl4j.util.BitState;
 public final class AdjustedSum extends RelaxedGraphHeuristic {
 
     /**
-     * Creates a new <code>AdjustedSum</code> heuristic for a specified planning problem.
+     * Creates a new <code>AdjustedSum</code> client.heuristic for a specified planning problem.
      *
      * @param problem the planning problem.
      * @throws NullPointerException if <code>problem == null</code>.

@@ -24,9 +24,9 @@ import fr.uga.pddl4j.util.BitExp;
 import fr.uga.pddl4j.util.BitState;
 
 /**
- * This class implement the adjusted sum 2 heuristic. This heuristic improves the adjusted sum
- * heuristic by replacing the computation of the <code>cost(S)</code> by the used the relaxed plan
- * heuristic. Now, we have the following heuristic:
+ * This class implement the adjusted sum 2 client.heuristic. This client.heuristic improves the adjusted sum
+ * client.heuristic by replacing the computation of the <code>cost(S)</code> by the used the relaxed plan
+ * client.heuristic. Now, we have the following client.heuristic:
  * <pre>
  * hadjsum2(S) := cost(S) + delta(S)
  * </pre>
@@ -35,7 +35,7 @@ import fr.uga.pddl4j.util.BitState;
  * <li> <code>cost(S) := 1 +  cost(S + prec(a) - add(a))</code>
  * <li> <code>delta(S) := lev(S) - max(lev(p))</code> for all <code>p</code> in <code>S</code>
  * </ul>
- * <b>Warning:</b> The adjusted sum heuristic is not admissible.
+ * <b>Warning:</b> The adjusted sum client.heuristic is not admissible.
  *
  * @author D. Pellier
  * @version 1.0 - 10.06.2010
@@ -47,7 +47,7 @@ import fr.uga.pddl4j.util.BitState;
 public final class AdjustedSum2 extends RelaxedGraphHeuristic {
 
     /**
-     * Creates a new <code>AdjustedSum2</code> heuristic for a specified planning problem.
+     * Creates a new <code>AdjustedSum2</code> client.heuristic for a specified planning problem.
      *
      * @param problem the planning problem.
      * @throws NullPointerException if <code>problem == null</code>.

@@ -24,10 +24,10 @@ import fr.uga.pddl4j.util.BitExp;
 import fr.uga.pddl4j.util.BitState;
 
 /**
- * This class implements the SUM_ID mutex heuristic is an adaptation of the sum heuristic where mutual
- * exclusion are computed. For more details on the sum heuristic see Blai Bonet and Hector Geffner,
+ * This class implements the SUM_ID mutex client.heuristic is an adaptation of the sum client.heuristic where mutual
+ * exclusion are computed. For more details on the sum client.heuristic see Blai Bonet and Hector Geffner,
  * Planning as Heuristic Search, Artificial Intelligence 129, 2001, Elsevier.
- * <b>Warning:</b> The sum heuristic is not admissible.
+ * <b>Warning:</b> The sum client.heuristic is not admissible.
  *
  * @author D. Pellier
  * @version 1.0 - 11.06.2010
@@ -37,7 +37,7 @@ import fr.uga.pddl4j.util.BitState;
 public final class SumMutex extends GraphHeuristic {
 
     /**
-     * Creates a new <code>SUM_MUTEX</code> heuristic for a specified planning problem.
+     * Creates a new <code>SUM_MUTEX</code> client.heuristic for a specified planning problem.
      *
      * @param problem the planning problem.
      * @throws NullPointerException if <code>problem == null</code>.

@@ -36,11 +36,11 @@ public final class HeuristicToolKit {
     private HeuristicToolKit(){}
 
     /**
-     * Create an heuristic of a specified type.
+     * Create an client.heuristic of a specified type.
      *
-     * @param type    the type of the heuristic to create.
-     * @param problem the problem for which the heuristic is created.
-     * @return the heuristic created.
+     * @param type    the type of the client.heuristic to create.
+     * @param problem the problem for which the client.heuristic is created.
+     * @return the client.heuristic created.
      * @throws NullPointerException if <code>type == null || problem == null</code>.
      */
     public static Heuristic createHeuristic(final Heuristic.Type type, final CodedProblem problem) {

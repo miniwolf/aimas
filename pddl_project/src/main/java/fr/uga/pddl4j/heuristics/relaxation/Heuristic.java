@@ -24,8 +24,8 @@ import fr.uga.pddl4j.util.BitState;
 
 
 /**
- * This interface defines the methods accessible from all heuristics. An heuristic is a function
- * that estimates the remaining distance to the goal. In order to find this estimation an heuristic
+ * This interface defines the methods accessible from all heuristics. An client.heuristic is a function
+ * that estimates the remaining distance to the goal. In order to find this estimation an client.heuristic
  * function tries to solve a relaxed problem.
  * <p>
  * To have an good overview of the planning heuristics developed in this package see D. Bryce and S.
@@ -49,14 +49,14 @@ public interface Heuristic {
     int estimate(final BitState state, final BitExp goal);
 
     /**
-     * Returns <code>true</code> if this heuristic is admissible.
+     * Returns <code>true</code> if this client.heuristic is admissible.
      *
-     * @return <code>true</code> if this heuristic is admissible.
+     * @return <code>true</code> if this client.heuristic is admissible.
      */
     boolean isAdmissible();
 
     /**
-     * The type of heuristic implemented.
+     * The type of client.heuristic implemented.
      *
      * @author D. Pellier
      * @version 1.0 - 09.02.2011
@@ -64,39 +64,39 @@ public interface Heuristic {
     enum  Type {
 
         /**
-         * The type for the <code>AdjustedSum</code> heuristic.
+         * The type for the <code>AdjustedSum</code> client.heuristic.
          */
         AJUSTED_SUM,
         /**
-         * The type for the <code>AdjustedSum2</code> heuristic.
+         * The type for the <code>AdjustedSum2</code> client.heuristic.
          */
         AJUSTED_SUM2,
         /**
-         * The type for the <code>AdjustedSum2M</code> heuristic.
+         * The type for the <code>AdjustedSum2M</code> client.heuristic.
          */
         AJUSTED_SUM2M,
         /**
-         * The type for the <code>Combo</code> heuristic.
+         * The type for the <code>Combo</code> client.heuristic.
          */
         COMBO,
         /**
-         * The type for the <code>Max</code> heuristic.
+         * The type for the <code>Max</code> client.heuristic.
          */
         MAX,
         /**
-         * The type for the <code>FastForward</code> heuristic.
+         * The type for the <code>FastForward</code> client.heuristic.
          */
         FAST_FORWARD,
         /**
-         * The type for the <code>SetLevel</code> heuristic.
+         * The type for the <code>SetLevel</code> client.heuristic.
          */
         SET_LEVEL,
         /**
-         * The type for the <code>Sum</code> heuristic.
+         * The type for the <code>Sum</code> client.heuristic.
          */
         SUM,
         /**
-         * The type for the <code>SumMutex</code> heuristic.
+         * The type for the <code>SumMutex</code> client.heuristic.
          */
         SUM_MUTEX,
 

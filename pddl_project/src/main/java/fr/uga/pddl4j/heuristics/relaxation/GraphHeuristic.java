@@ -145,7 +145,7 @@ public abstract class GraphHeuristic extends AbstractHeuristic {
     private boolean debug;
 
     /**
-     * Creates a new RelaxedGraphHeuristic heuristic.
+     * Creates a new RelaxedGraphHeuristic client.heuristic.
      *
      * @param problem the problem to be solved.
      */
@@ -281,7 +281,7 @@ public abstract class GraphHeuristic extends AbstractHeuristic {
     }
 
     /**
-     * Set the goal of the problem to solve in order to compute the heuristic.
+     * Set the goal of the problem to solve in order to compute the client.heuristic.
      *
      * @param goal the goal.
      */
@@ -467,9 +467,9 @@ public abstract class GraphHeuristic extends AbstractHeuristic {
     }
 
     /**
-     * Computes the sum heuristic.
+     * Computes the sum client.heuristic.
      *
-     * @return the sum heuristic value.
+     * @return the sum client.heuristic value.
      * @see Sum
      */
     protected final int getSumValue() {

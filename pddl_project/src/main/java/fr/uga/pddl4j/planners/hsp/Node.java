@@ -61,7 +61,7 @@ public final class Node extends BitState {
     }
 
     /**
-     * Creates a new node with a specified state, parent node, operator, cost and heuristic value.
+     * Creates a new node with a specified state, parent node, operator, cost and client.heuristic value.
      *
      * @param state     the logical state of the node.
      * @param parent    the parent node of the node.
@@ -150,11 +150,11 @@ public final class Node extends BitState {
     }
 
     /**
-     * Returns the value of the heuristic function, i.e.,
+     * Returns the value of the client.heuristic function, i.e.,
      * <code>this.node.getCost() + this.node.getHeuristic()</code>.
      *
-     * @param weight the weight of the heuristic.
-     * @return the value of the heuristic function, i.e.,
+     * @param weight the weight of the client.heuristic.
+     * @return the value of the client.heuristic function, i.e.,
      * <code>this.node.getCost() + this.node.getHeuristic()</code>.
      */
     public final double getValueF(double weight) {

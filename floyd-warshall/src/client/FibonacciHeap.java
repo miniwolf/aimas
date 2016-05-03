@@ -1,5 +1,5 @@
-/***********************************************************************
- * File: FibonacciHeap.java
+package client; /***********************************************************************
+ * File: client.FibonacciHeap.java
  * Author: Keith Schwarz (htiek@cs.stanford.edu)
  * <p>
  * An implementation of a priority queue backed by a Fibonacci heap,
@@ -193,11 +193,11 @@ public final class FibonacciHeap<T> {
      *
      * @param one The first Fibonacci heap to merge.
      * @param two The second Fibonacci heap to merge.
-     * @return A new FibonacciHeap containing all of the elements of both
+     * @return A new client.FibonacciHeap containing all of the elements of both
      *         heaps.
      */
     public static <T> FibonacciHeap<T> merge(FibonacciHeap<T> one, FibonacciHeap<T> two) {
-        /* Create a new FibonacciHeap to hold the result. */
+        /* Create a new client.FibonacciHeap to hold the result. */
         FibonacciHeap<T> result = new FibonacciHeap<T>();
 
         /* Merge the two Fibonacci heap root lists together.  This helper function

@@ -56,7 +56,7 @@ public final class HSP {
     private static final Logger LOGGER = LogManager.getLogger(HSP.class);
 
     /**
-     * The default heuristic.
+     * The default client.heuristic.
      */
     private static final Heuristic.Type DEFAULT_HEURISTIC = Heuristic.Type.FAST_FORWARD;
 
@@ -66,7 +66,7 @@ public final class HSP {
     private static final int DEFAULT_CPU_TIME = 600;
 
     /**
-     * The default weight of the heuristic.
+     * The default weight of the client.heuristic.
      */
     private static final double DEFAULT_WHEIGHT = 1.00;
 
@@ -88,11 +88,11 @@ public final class HSP {
          */
         PROBLEM,
         /**
-         * The heuristic to use.
+         * The client.heuristic to use.
          */
         HEURISTIC_TYPE,
         /**
-         * The weight of the heuristic.
+         * The weight of the client.heuristic.
          */
         WEIGHT,
         /**
@@ -339,7 +339,7 @@ public final class HSP {
         // Compute the memory used by the search
         //this.searchingMemory += MemoryAgent.deepSizeOf(closeSet) + MemoryAgent.deepSizeOf(openSet)
 //            + MemoryAgent.deepSizeOf(open);
-//        this.searchingMemory += MemoryAgent.deepSizeOf(heuristic);
+//        this.searchingMemory += MemoryAgent.deepSizeOf(client.heuristic);
         this.nbOfExploredNodes = closeSet.size();
         // return the plan computed or null if no plan was found
         return plan;
@@ -377,16 +377,16 @@ public final class HSP {
      * -f <i>str</i>   fact file name
      * -w <i>num</i>   the weight used in the a star search (preset: 1)
      * -t <i>num</i>   specifies the maximum CPU-time in seconds (preset: 300)
-     * -u <i>num</i>   specifies the heuristic to used (preset: 0)
-     *      0      ff heuristic
-     *      1      sum heuristic
-     *      2      sum mutex heuristic
-     *      3      adjusted sum heuristic
-     *      4      adjusted sum 2 heuristic
-     *      5      adjusted sum 2M heuristic
-     *      6      combo heuristic
-     *      7      max heuristic
-     *      8      set-level heuristic
+     * -u <i>num</i>   specifies the client.heuristic to used (preset: 0)
+     *      0      ff client.heuristic
+     *      1      sum client.heuristic
+     *      2      sum mutex client.heuristic
+     *      3      adjusted sum client.heuristic
+     *      4      adjusted sum 2 client.heuristic
+     *      5      adjusted sum 2M client.heuristic
+     *      6      combo client.heuristic
+     *      7      max client.heuristic
+     *      8      set-level client.heuristic
      * -i <i>num</i>   run-time information level (preset: 1)
      *      0      nothing
      *      1      info on action number, search and plan
@@ -524,16 +524,16 @@ public final class HSP {
             .append("-f <str>    fact file name\n")
             .append("-w <num>    the weight used in the a star seach (preset: 1)\n")
             .append("-t <num>    specifies the maximum CPU-time in seconds (preset: 300)\n")
-            .append("-u <num>    specifies the heuristic to used (preset: 0)\n")
-            .append("     0      ff heuristic\n")
-            .append("     1      sum heuristic\n")
-            .append("     2      sum mutex heuristic\n")
-            .append("     3      adjusted sum heuristic\n")
-            .append("     4      adjusted sum 2 heuristic\n")
-            .append("     5      adjusted sum 2M heuristic\n")
-            .append("     6      combo heuristic\n")
-            .append("     7      max heuristic\n")
-            .append("     8      set-level heuristic\n")
+            .append("-u <num>    specifies the client.heuristic to used (preset: 0)\n")
+            .append("     0      ff client.heuristic\n")
+            .append("     1      sum client.heuristic\n")
+            .append("     2      sum mutex client.heuristic\n")
+            .append("     3      adjusted sum client.heuristic\n")
+            .append("     4      adjusted sum 2 client.heuristic\n")
+            .append("     5      adjusted sum 2M client.heuristic\n")
+            .append("     6      combo client.heuristic\n")
+            .append("     7      max client.heuristic\n")
+            .append("     8      set-level client.heuristic\n")
             .append("-i <num>    run-time information level (preset: 1)\n")
             .append("     0      nothing\n")
             .append("     1      info on action number, search and plan\n")
@@ -582,13 +582,13 @@ public final class HSP {
         private static final long serialVersionUID = 1L;
 
         /**
-         * The weight of the heuristic use for the comparison.
+         * The weight of the client.heuristic use for the comparison.
          */
         private double weight;
 
         /**
-         * Build the Node comparator object base on heuristic weight.
-         * @param weight the heuristic weight
+         * Build the Node comparator object base on client.heuristic weight.
+         * @param weight the client.heuristic weight
          */
         public NodeComparator(double weight) {
             this.weight = weight;

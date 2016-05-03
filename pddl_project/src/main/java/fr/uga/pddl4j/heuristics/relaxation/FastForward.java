@@ -25,14 +25,14 @@ import fr.uga.pddl4j.util.BitState;
 
 /**
  * This class implements the heuristics of the fast forward planner. For more about this
- * heuristic see J. Hoffmann, A Heuristic for DOMAIN Independent Planning and its Use in an Enforced
+ * client.heuristic see J. Hoffmann, A Heuristic for DOMAIN Independent Planning and its Use in an Enforced
  * Hill-climbing Algorithm, in: Proceedings of the 12th International Symposium on Methodologies for
  * Intelligent Systems, Charlotte, North Carolina, USA, October 2000.
  * <p>
  * The computation of the value returned by the heuristics is based on the extraction of a relaxed
- * plan to the planning graph ignoring negative effects according to the difficulty heuristic. The
- * heuristic value is the number of actions of the relaxed plan extracted. To select an effect
- * according to the unconditional operators difficulty heuristic, the question is, which achiever
+ * plan to the planning graph ignoring negative effects according to the difficulty client.heuristic. The
+ * client.heuristic value is the number of actions of the relaxed plan extracted. To select an effect
+ * according to the unconditional operators difficulty client.heuristic, the question is, which achiever
  * should be choose when no NOOP is available ? It is certainly a good idea to select an achiever
  * whose preconditions seems to be "easy". From the graph building phase, we can obtain a simple
  * measure for the operators_difficulty of an action's preconditions as follows:
@@ -43,10 +43,10 @@ import fr.uga.pddl4j.util.BitState;
  * <p>
  * The operators_difficulty of each action can be set when it is first inserted into the graph.
  * During plan extraction, facing a fact for which no NOOP is available, we then simply selected an
- * achieving action with minimal operators_difficulty. This heuristic works well in situation where
+ * achieving action with minimal operators_difficulty. This client.heuristic works well in situation where
  * there are severals ways to achieve one fact. but some ways need less effort than others.
  * </p>
- * <b>Warning:</b> The relaxed plan heuristic is not admissible.
+ * <b>Warning:</b> The relaxed plan client.heuristic is not admissible.
  *
  * @author D. Pellier
  * @version 1.0 - 20.08.2010
@@ -55,7 +55,7 @@ import fr.uga.pddl4j.util.BitState;
 public final class FastForward extends RelaxedGraphHeuristic {
 
     /**
-     * Creates a new <code>FastForward</code> heuristic for a specified planning problem.
+     * Creates a new <code>FastForward</code> client.heuristic for a specified planning problem.
      *
      * @param problem the planning problem.
      * @throws NullPointerException if <code>problem == null</code>.

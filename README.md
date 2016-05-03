@@ -18,7 +18,7 @@ The library contains:
 ###3. What to do now?
 
 Work in progress:
-  * Heuristic thoughts and experiments
+  * client.heuristic.Heuristic thoughts and experiments
   * QLearning for guiding the AI to find the correct solution by reinforcement learning.
   * Partial Order Planning
   * Other

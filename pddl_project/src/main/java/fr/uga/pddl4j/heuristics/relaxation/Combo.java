@@ -24,18 +24,18 @@ import fr.uga.pddl4j.util.BitExp;
 import fr.uga.pddl4j.util.BitState;
 
 /**
- * This class implement the combo heuristic. This heuristic improves the adjusted sum
- * heuristic by replacing the computation of the interaction degree of the of the adjusted sum
- * heuristic. Now, we have the following heuristic:
+ * This class implement the combo client.heuristic. This client.heuristic improves the adjusted sum
+ * client.heuristic by replacing the computation of the interaction degree of the of the adjusted sum
+ * client.heuristic. Now, we have the following client.heuristic:
  * <pre>
  * combo(S) := hsum(S) + hlvel(S)
  * </pre>
  * where
  * <ul>
- * <li> <tt>hsum(S)</tt> is the sum heuristic value and</li>
- * <li> <tt>hlev(S)</tt> the set-level heuristic value.</li>
+ * <li> <tt>hsum(S)</tt> is the sum client.heuristic value and</li>
+ * <li> <tt>hlev(S)</tt> the set-level client.heuristic value.</li>
  * </ul>
- * <b>Warning:</b> The combo heuristic is not admissible.
+ * <b>Warning:</b> The combo client.heuristic is not admissible.
  *
  * @author D. Pellier
  * @version 1.0 - 01.09.2010
@@ -46,13 +46,13 @@ import fr.uga.pddl4j.util.BitState;
 public final class Combo extends RelaxedGraphHeuristic {
 
     /**
-     * The set level heuristic used to compute the delta function, i.e., the interaction degree
+     * The set level client.heuristic used to compute the delta function, i.e., the interaction degree
      * among propositions of the goal.
      */
     private SetLevel delta;
 
     /**
-     * Creates a new <code>COMBO</code> heuristic for a specified planning problem.
+     * Creates a new <code>COMBO</code> client.heuristic for a specified planning problem.
      *
      * @param problem the planning problem.
      * @throws NullPointerException if <code>problem == null</code>.
@@ -75,9 +75,9 @@ public final class Combo extends RelaxedGraphHeuristic {
     @Override
     public int estimate(final BitState state, final BitExp goal) {
         super.setGoal(goal);
-        // First, we expand the relaxed planing graph to compute the sum heuristic
+        // First, we expand the relaxed planing graph to compute the sum client.heuristic
         super.expandRelaxedPlanningGraph(state);
-        // Second, we expand the relaxed planning graph with mutex to compute the set level heuristic
+        // Second, we expand the relaxed planning graph with mutex to compute the set level client.heuristic
         this.delta.expandPlanningGraph(state);
         return super.isGoalReachable() ? this.getSumValue() + this.delta.estimate(state, goal) : Integer.MAX_VALUE;
     }

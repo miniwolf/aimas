@@ -1,6 +1,7 @@
+package client
+
 import searchclient.{Agent, Node, Position}
 
-import scala.collection.JavaConversions._
 import scala.collection.immutable.Map
 import scala.collection.JavaConversions._
 

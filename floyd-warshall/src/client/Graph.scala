@@ -1,6 +1,6 @@
 package client
 
-import scala.collection.JavaConversions._
+import searchclient.{Node, Position}
 
 import searchclient.{Node, Position}
 

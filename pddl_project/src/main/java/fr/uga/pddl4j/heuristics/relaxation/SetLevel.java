@@ -24,12 +24,12 @@ import fr.uga.pddl4j.util.BitExp;
 import fr.uga.pddl4j.util.BitState;
 
 /**
- * This heuristic returns the level of the planning graph where all the propositions of the goal are
- * reached without any mutex free. For more information on this heuristic see: X. Nguyen and S.
+ * This client.heuristic returns the level of the planning graph where all the propositions of the goal are
+ * reached without any mutex free. For more information on this client.heuristic see: X. Nguyen and S.
  * Kambhampati. "Extracting effective and admissible state space heuristics from the planning
  * graph". In proceedings of the National Conference on Innovative Applications of Artificial
  * Intelligence, 2000.
- * <b>Warning:</b> The set-level heuristic is admissible.
+ * <b>Warning:</b> The set-level client.heuristic is admissible.
  *
  * @author D. Pellier
  * @version 1.0 - 10.06.2010
@@ -38,7 +38,7 @@ import fr.uga.pddl4j.util.BitState;
 public final class SetLevel extends GraphHeuristic {
 
     /**
-     * Creates a new <code>SET_LEVEL</code> heuristic for a specified planning problem.
+     * Creates a new <code>SET_LEVEL</code> client.heuristic for a specified planning problem.
      *
      * @param problem the planning problem.
      * @throws NullPointerException if <code>problem == null</code>.

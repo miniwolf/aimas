@@ -24,9 +24,9 @@ import fr.uga.pddl4j.util.BitExp;
 import fr.uga.pddl4j.util.BitState;
 
 /**
- * This class implement the adjusted sum 2M heuristic. This heuristic improves the adjusted sum 2
- * heuristic by replacing the computation of the interaction degree of the of the adjusted sum 2
- * heuristic. Now, we have the following heuristic:
+ * This class implement the adjusted sum 2M client.heuristic. This client.heuristic improves the adjusted sum 2
+ * client.heuristic by replacing the computation of the interaction degree of the of the adjusted sum 2
+ * client.heuristic. Now, we have the following client.heuristic:
  * <pre>
  * hadjsum2M(S) := cost(S) + delta(S)
  * </pre>
@@ -37,9 +37,9 @@ import fr.uga.pddl4j.util.BitState;
  * <tt>S</tt></li>
  * </ul>
  * <p>
- * Note that computing <tt>delta(S)</tt> is equivalent to compute the set level heuristic.
+ * Note that computing <tt>delta(S)</tt> is equivalent to compute the set level client.heuristic.
  * </p>
- * <b>Warning:</b> The adjusted sum 2M heuristic is not admissible.
+ * <b>Warning:</b> The adjusted sum 2M client.heuristic is not admissible.
  *
  * @author D. Pellier
  * @version 1.0 - 01.09.2010
@@ -51,13 +51,13 @@ import fr.uga.pddl4j.util.BitState;
 public final class AjustedSum2M extends RelaxedGraphHeuristic {
 
     /**
-     * The set level heuristic used to compute the delta function, i.e., the interaction degree
+     * The set level client.heuristic used to compute the delta function, i.e., the interaction degree
      * among propositions of the goal.
      */
     private SetLevel delta;
 
     /**
-     * Creates a new <code>AJUSTED_SUM2M</code> heuristic for a specified planning problem.
+     * Creates a new <code>AJUSTED_SUM2M</code> client.heuristic for a specified planning problem.
      *
      * @param problem the planning problem.
      * @throws NullPointerException if <code>problem == null</code>.
@@ -80,9 +80,9 @@ public final class AjustedSum2M extends RelaxedGraphHeuristic {
     @Override
     public int estimate(final BitState state, final BitExp goal)  {
         super.setGoal(goal);
-        // First, we expand the relaxed planing graph to compute the relaxed plan value heuristic
+        // First, we expand the relaxed planing graph to compute the relaxed plan value client.heuristic
         super.expandRelaxedPlanningGraph(state);
-        // Second, we expand the relaxed planning graph with mutex to compute the set level heuristic
+        // Second, we expand the relaxed planning graph with mutex to compute the set level client.heuristic
         this.delta.expandPlanningGraph(state);
         // If the goal was not reached, it means that the goal is unreachable
         return super.isGoalReachable() ? super.getRelaxedPlanValue()

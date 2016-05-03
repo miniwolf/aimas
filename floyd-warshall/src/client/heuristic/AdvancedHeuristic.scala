@@ -6,7 +6,7 @@ import searchclient.{Box, Node, Position}
 import scala.collection.JavaConversions._
 
 /**
-  * Created by miniwolf on 03-05-2016.
+  * Created by miniwolf on 31-03-2016.
   */
 class AdvancedHeuristic(goalMatch: Map[Position, Int], edges: Map[Position, List[Position]]) extends Heuristic {
   def h(n: Node): Int = {

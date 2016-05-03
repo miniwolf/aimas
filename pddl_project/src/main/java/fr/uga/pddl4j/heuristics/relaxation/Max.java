@@ -24,7 +24,7 @@ import fr.uga.pddl4j.util.BitExp;
 import fr.uga.pddl4j.util.BitState;
 
 /**
- * This class implements the MAX heuristic. (for more details on this heuristic see Blai Bonet and
+ * This class implements the MAX client.heuristic. (for more details on this client.heuristic see Blai Bonet and
  * Hector Geffner, Planning as Heuristic Search, Artificial Intelligence 129, 2001, Elsevier)
  * <p>
  * The principle of this heuristics function <i>h</i> is to resolved a relaxed the planning problem
@@ -41,13 +41,13 @@ import fr.uga.pddl4j.util.BitState;
  * <ul>
  * <li> <i>hmax(C)</i> = max <i>gs(r)</i> for all <i>r</i> in <i>C</i> (max costs)
  * </ul>
- * The max heuristic unlike the additive heuristic SUM_ID is admissible as the cost of achieving a
+ * The max client.heuristic unlike the additive client.heuristic SUM_ID is admissible as the cost of achieving a
  * set of atoms cannot be lower than the cost of achieving each of the atoms in the set. On the other
- * hand, the max heuristic is often less informative. In fact, while the additive heuristic combines
- * the costs of all subgoals, the max heuristic focuses only on the most difficult subgoals ignoring
+ * hand, the max client.heuristic is often less informative. In fact, while the additive client.heuristic combines
+ * the costs of all subgoals, the max client.heuristic focuses only on the most difficult subgoals ignoring
  * all others.
  * </p>
- * <b>Warning:</b> The max heuristic is admissible.
+ * <b>Warning:</b> The max client.heuristic is admissible.
  *
  * @author D. Pellier
  * @version 1.0 - 11.06.2010
@@ -56,7 +56,7 @@ import fr.uga.pddl4j.util.BitState;
 public final class Max extends RelaxedGraphHeuristic {
 
     /**
-     * Creates a new <code>MAX</code> heuristic for a specified planning problem.
+     * Creates a new <code>MAX</code> client.heuristic for a specified planning problem.
      *
      * @param problem the planning problem.
      * @throws NullPointerException if <code>problem == null</code>.
