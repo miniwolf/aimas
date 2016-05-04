@@ -1,4 +1,4 @@
-/*package searchclient;
+package searchclient;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,10 +8,12 @@ import java.util.*;
 import searchclient.Heuristic.*;
 import searchclient.Strategy.*;
 
-public class SearchClient {
+public class MultiSearchClient {
     public Node initialState = null;
+    
+    public List<Agent> agents = new ArrayList<Agent>();
 
-    public SearchClient(List<String> lines) throws Exception {
+    public MultiSearchClient(List<String> lines) throws Exception {
         Map<Character, String> colors = new HashMap<>();
         String line, color;
 
@@ -30,11 +32,7 @@ public class SearchClient {
             colorLines++;
             index++;
         }
-
-        if ( colorLines > 0 ) {
-            error("Box colors not supported");
-        }
-
+        
         initialState = new Node(null);
         int id = 0;
         for ( int i = index; i < lines.size(); i++ ) {
@@ -45,7 +43,13 @@ public class SearchClient {
                 if ( '+' == chr ) { // Walls
                     Node.walls.add(pos);
                 } else if ( '0' <= chr && chr <= '9' ) { // Agents
-                    initialState.setAgent(new Agent(pos, colors.get( id ), 0)); // TODO: Does not support MA
+                	
+                	// SJW TEST WITH 2 AGENTS
+                	//agents.add(new Agent(pos, colors.get( id ), 0));
+                	//agents.add(new Agent(pos, colors.get( id ), 1));
+                	                	
+                	agents.add(new Agent(pos, colors.get( id ), chr));
+                	initialState.setAgents(agents);    
                 } else if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
                     initialState.boxes.add(new Box(pos, chr, id));
                     id++;
@@ -53,7 +57,6 @@ public class SearchClient {
                     Node.goals.put(pos, chr);
                 }
             }
-
             levelLines++;
         }
     }
@@ -64,10 +67,11 @@ public class SearchClient {
     }
 
     public static void main(String[] args) throws Exception {
+    	
         BufferedReader serverMessages = new BufferedReader(new InputStreamReader(System.in));
 
         // Use stderr to print to console
-        System.err.println("SearchClient initializing. I am sending this using the error output stream.");
+        System.err.println("MultiSearchClient initializing. I am sending this using the error output stream.");
         List<String> lines = new ArrayList<>();
         String line;
         while ( !(line = serverMessages.readLine()).equals("") ) {
@@ -78,7 +82,7 @@ public class SearchClient {
 
 
         // Read level and create the initial state of the problem
-        SearchClient client = new SearchClient(lines);
+        MultiSearchClient client = new MultiSearchClient(lines);
 
         Strategy strategy;
         //strategy = new StrategyBFS();
@@ -91,6 +95,7 @@ public class SearchClient {
         //strategy = new StrategyBestFirst( new Greedy2( client.initialState ) );
 
         LinkedList<Node> solution = client.Search(strategy);
+        
 
         if ( solution == null ) {
             System.err.println("Unable to solve level");
@@ -99,7 +104,26 @@ public class SearchClient {
             System.err.println("\nSummary for " + strategy);
             System.err.println("Found solution of length " + solution.size());
             System.err.println(strategy.searchStatus());
-
+            /*
+            // SJW
+            for ( Node n : solution ) {           
+            	for(int i = 0; i < n.actions.size(); i++) {
+            		//acts.add(i, n.actions.get(i));
+            		//String act = acts.remove(i).toActionString();
+            		
+            		String act = n.actions.remove(i).toActionString();
+            		
+                    System.out.println(act);
+                    String response = serverMessages.readLine();
+                    if ( response.contains("false") ) {
+                        System.err.format("Server responsed with %s to the inapplicable action: %s\n", response, act);
+                        System.err.format("%s was attempted in \n%s\n", act, n);
+                        break;
+                    }
+            	}
+            }*/
+            
+            
             for ( Node n : solution ) {
                 String act = n.action.toActionString();
                 System.out.println(act);
@@ -180,4 +204,3 @@ public class SearchClient {
         }
     }
 }
-*/

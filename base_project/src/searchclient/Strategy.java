@@ -1,11 +1,10 @@
 package searchclient;
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
 
-import searchclient.SearchClient.Memory;
+//import searchclient.SearchClient.Memory;
+
+import searchclient.MultiSearchClient.Memory;
 import searchclient.Node;
 
 public abstract class Strategy {
