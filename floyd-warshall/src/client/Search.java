@@ -58,24 +58,31 @@ public class Search {
         }
     }
 
-    private static boolean agentGoalState(Node leafNode, int boxToRemoveId, HashSet<Position> boxPath) {
-        HashSet<Position> agentPath = leafNode.getAgent().getAgentPath();
-        if ( agentPath == null || agentPath.size() != 1 ) {
+    public static boolean agentGoalState
+            (Node leafNode, Position goalBoxPos, int boxToRemoveId, HashSet<Position> boxPath,
+             scala.collection.immutable.List<Position> immovableBoxes) {
+        Box boxToRemove = leafNode.boxes.stream().filter(box -> box.getId() == boxToRemoveId).findFirst().get();
+        Position boxToRemovePosition = boxToRemove.getPosition();
+        Position agentPosition = leafNode.getAgent().getPosition();
+        if ( Math.abs(boxToRemovePosition.getX() - agentPosition.getX()) + Math.abs(boxToRemovePosition.getY() - agentPosition.getY()) != 1 ) {
             return false;
         }
-        Box boxToRemove = leafNode.boxes.stream().filter(box -> box.getId() == boxToRemoveId).findFirst().get();
-        return !agentPath.contains(boxToRemove.getPosition()) && !boxPath.contains(boxToRemove.getPosition());
+        scala.collection.immutable.List<Position> agentPath = PathFinding.searchEmpty(goalBoxPos, leafNode.getAgent().getPosition(), leafNode, immovableBoxes);
+        if ( agentPath.isEmpty() ) {
+            return false;
+        }
+        return !agentPath.contains(boxToRemovePosition) && !boxPath.contains(boxToRemovePosition);
     }
 
-    public static LinkedList<Node> agentRemovalSearch(Strategy.AdvancedStrategy strategy,
-                                                      Node initialState, int threshold,
-                                                      int boxToRemoveId, List<Position> dangerZone,
-                                                      HashSet<Position> boxPath, int depth) throws IOException {
+    public static LinkedList<Node> agentRemovalSearch
+            (Strategy.AdvancedStrategy strategy, Node initialState, int threshold, int boxToRemoveId,
+             List<Position> dangerZone, HashSet<Position> boxPath, Position goalBoxPos,
+             scala.collection.immutable.List<Position> immovableBoxes, int depth) throws IOException {
         System.err.format("client.Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(initialState);
 
         int iterations = 0;
-        List<LinkedList<Node>> solutionLists = new ArrayList<>();
+        List<Node> solutionLists = new ArrayList<>();
         while ( true ) {
             if ( SearchClient.Memory.shouldEnd() ) {
                 System.err.format("Memory limit almost reached, terminating search %s\n", SearchClient.Memory.stringRep());
@@ -84,16 +91,16 @@ public class Search {
 
             if ( strategy.frontierIsEmpty() ) {
                 if ( !solutionLists.isEmpty() ) {
-                    return solutionLists.get(solutionLists.size() - 1);
+                    return solutionLists.get(solutionLists.size() - 1).extractPlan();
                 }
                 return null;
             }
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if ( agentGoalState(leafNode, boxToRemoveId, boxPath) ) {
+            if ( agentGoalState(leafNode, goalBoxPos, boxToRemoveId, boxPath, immovableBoxes) ) {
                 if ( solutionLists.size() < depth ) {
-                    solutionLists.add(leafNode.extractPlan());
+                    solutionLists.add(leafNode);
                 } else {
                     System.err.println("\nSummary for " + strategy);
                     System.err.println(strategy.searchStatus());
@@ -115,28 +122,6 @@ public class Search {
             // The list of expanded nodes is shuffled randomly; see Node.java
             expandedNodes.stream().filter(n -> !strategy.isExplored(n) && !strategy.inFrontier(n)).forEach(strategy::addToFrontier);
             iterations++;
-        }
-    }
-
-
-    public static List<Position> search(Strategy.PathStrategy strategy, Node initialState, Position goalState) {
-        strategy.addToFrontier(initialState);
-
-        while ( true ) {
-            if ( strategy.frontierIsEmpty() ) {
-                return null;
-            }
-
-            Node leafNode = strategy.getAndRemoveLeaf();
-
-            if ( leafNode.getAgent().getPosition().equals(goalState) ) {
-                return new ArrayList<>(leafNode.extractPath());
-            }
-
-            strategy.addToExplored(leafNode);
-            ArrayList<Node> expandedNodes = leafNode.getExpandedNodes();
-            // The list of expanded nodes is shuffled randomly; see Node.java
-            expandedNodes.stream().filter(n -> !strategy.isExplored(n) && !strategy.inFrontier(n)).forEach(strategy::addToFrontier);
         }
     }
 }

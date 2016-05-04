@@ -132,9 +132,10 @@ object Solution {
   }
 
   def removeBoxesFromAgentPath(list: List[Box], solutionList: List[Node], node: Node,
-                               boxPath: util.HashSet[Position], depth: Int): (List[Node], Node) = {
+                               boxPath: util.HashSet[Position], goalBoxId: Int, immovableBoxes: List[Position],
+                               depth: Int): (List[Node], Node, Int) = {
     list match {
-      case Nil => (solutionList, node)
+      case Nil => (solutionList, node, depth)
       case box :: cdr =>
         val lockedNode = node.ChildNode()
         lockedNode.parent = null
@@ -149,26 +150,35 @@ object Solution {
 
         lockedNode.boxes.add(box)
 
+        val realGoalBox = lockedNode.boxes.find(b => b.getId == goalBoxId).get
+
         val strategy = new AdvancedStrategy(new AgentHeuristic(box, emptyEdges))
-        val solution: util.LinkedList[Node] = Search.agentRemovalSearch(strategy, lockedNode, 200000, box.getId, List(), boxPath, depth)
+        val solution = Search.agentRemovalSearch(strategy, lockedNode, 200000, box.getId, List(),
+                                                 boxPath, realGoalBox.getPosition, immovableBoxes, depth)
 
         if ( solution == null ) {
-          return (null, node)
+          return (null, node, depth)
         }
+        if ( solution.isEmpty ) {
+          return removeBoxesFromAgentPath(cdr, solutionList, node, boxPath, goalBoxId, box.getPosition :: immovableBoxes, depth)
+        }
+        val newBoxPos = solution.getLast.boxes.find(b => b.getId == box.getId).get.getPosition
+        val newImmovableBoxes = newBoxPos :: immovableBoxes
+
         solution.head.parent = solutionList match {
           case Nil => null
           case _ => solutionList.last
         }
         val newNode = solution.last.ChildNode()
         newNode.parent = null
-        removeBoxesFromAgentPath(cdr, solutionList ++ solution.toList, newNode, boxPath, depth)
+        removeBoxesFromAgentPath(cdr, solutionList ++ solution.toList, newNode, boxPath, goalBoxId, newImmovableBoxes, depth)
     }
   }
 
   def removeBoxesFromPath(list: List[Box], solutionList: List[Node], goal: Position, node: Node,
-                          path: HashSet[Position], depth: Int, boxId: Int): (List[Node], Node) = {
+                          path: HashSet[Position], depth: Int, boxId: Int): (List[Node], Node, Int) = {
     list match {
-      case Nil => (solutionList, node)
+      case Nil => (solutionList, node, depth)
       case box :: cdr =>
         val lockedNode = node.ChildNode()
         lockedNode.parent = null
@@ -192,7 +202,7 @@ object Solution {
         val tempBoxGoalList = testPositions.map(position => Astar.search3(edges, position, HashSet() ++ path, depth)).filter(position => position != null)
 
         if ( tempBoxGoalList.isEmpty ) {
-          return (null, node)
+          return (null, node, depth)
         }
         val tempBoxGoal = tempBoxGoalList.head
         val removedChar = Node.goals.remove(goal)
@@ -211,7 +221,7 @@ object Solution {
         Node.goals.remove(tempBoxGoal)
 
         if ( solution == null ) {
-          return (null, node)
+          return (null, node, depth)
         }
         if ( solution.isEmpty ) {
           return removeBoxesFromPath(cdr, solutionList, goal, node, path, depth, boxId)
@@ -226,9 +236,9 @@ object Solution {
     }
   }
 
-  def reducePath(path: List[Position], node: Node, boxId: Int, goal: Position, depth: Int): (List[Node], Node) = {
+  def reducePath(path: List[Position], node: Node, boxId: Int, goal: Position, depth: Int): (List[Node], Node, Int) = {
     node.boxes.filter(box => path.contains(box.getPosition) && box.getId != boxId).toList match {
-      case Nil => (List(), node)
+      case Nil => (List(), node, depth)
       case boxes =>
         val list: List[Box] = path.map(pos => boxes.filter(box => box.getPosition.equals(pos)))
                                   .filter(list => list.nonEmpty).map(list => list.head)
@@ -236,36 +246,36 @@ object Solution {
     }
   }
 
-  def reduceAgentPath(path: List[Position], boxPath: List[Position], node: Node, boxId: Int, goal: Position, depth: Int): (List[Node], Node) = {
+  def reduceAgentPath(path: List[Position], boxPath: List[Position], node: Node, boxId: Int, goal: Position, depth: Int): (List[Node], Node, Int) = {
     node.boxes.filter(box => path.contains(box.getPosition) && box.getId != boxId).toList match {
-      case Nil => (List(), node)
+      case Nil => (List(), node, depth)
       case boxes =>
         val list: List[Box] = path.map(pos => boxes.filter(box => box.getPosition.equals(pos)))
           .filter(list => list.nonEmpty).map(list => list.head)
         val boxPathSet = new util.HashSet[Position]()
         boxPathSet.addAll(boxPath)
-        removeBoxesFromAgentPath(list, List(), node, boxPathSet, depth)
+        removeBoxesFromAgentPath(list, List(), node, boxPathSet, boxId, List(), depth) // TODO: Optimize null call out
     }
   }
 
   def reducesPaths(agentPath: List[Position], boxPath: List[Position], node: Node, boxId: Int,
-                   goal: Position, threshold: Int, depth: Int, solution: List[Node]): (List[Node], Node) = {
+                   goal: Position, threshold: Int, depth: Int, solution: List[Node]): (List[Node], Node, Int) = {
     val currentNode = node
     solution match {
       case null =>
         reduceAgentPath(agentPath, boxPath, currentNode, boxId, goal, depth) match {
-          case (null, _) => reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth + 1, solution)
-          case (agentSolution, _) if agentSolution.length > threshold => (null, node)
-          case (agentSolution, agentNode) =>
-            reducePath(boxPath, agentNode, boxId, goal, depth) match {
-              case (null, _) => reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth + 1, solution)
-              case (boxSolution, _) if boxSolution.length + agentSolution.length > threshold => (null, node)
-              case (boxSolution, boxNode) =>
+          case (null, _, _) => reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth + 1, solution)
+          case (agentSolution, _, _) if agentSolution.length > threshold => (null, node, depth)
+          case (agentSolution, agentNode, agentDepth) =>
+            reducePath(boxPath, agentNode, boxId, goal, agentDepth) match {
+              case (null, _, _) => reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, agentDepth + 1, solution)
+              case (boxSolution, _, _) if boxSolution.length + agentSolution.length > threshold => (null, node, agentDepth)
+              case (boxSolution, boxNode, boxDepth) =>
                 val newSolution = agentSolution ++ boxSolution
-                reducesPaths(agentPath, boxPath, boxNode, boxId, goal, threshold, depth + 1, newSolution)
+                reducesPaths(agentPath, boxPath, boxNode, boxId, goal, threshold, boxDepth + 1, newSolution)
             }
         }
-      case solutionList => (solutionList, node)
+      case solutionList => (solutionList, node, depth)
     }
   }
 
@@ -281,20 +291,22 @@ object Solution {
     savedGoals.foreach(goal => Node.goals.remove(goal._1))
     var solution = List[Node]()
     var currentNode = node
+    var currentDepth = depth
     val boxId = goalMatch.get(goal).get
     val box = node.boxes.filter(box => box.getId == boxId).last
     val boxPath = PathFinding.findPath2(node, box, goal, edges).reverse
     val agentPath = PathFinding.findPath2(node, box, node.getAgent.getPosition, edges)
     if ( node.boxes.length != 1 ) {
-      val solvedBoxes = goalMatch.filter(p => solved.contains(p._1)).values
-      node.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
-      val (reducedSolution, reducedNode) = reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth, null)
+      val (reducedSolution, reducedNode, reducedDepth) = reducesPaths(agentPath, boxPath, node, boxId, goal, threshold, depth, null)
       if ( reducedSolution == null ) {
         resetNode(savedGoals, node)
         return null
       }
       currentNode = reducedNode
       solution = reducedSolution
+      currentDepth = reducedDepth
+      val solvedBoxes = goalMatch.filter(p => solved.contains(p._1)).values
+      currentNode.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
     }
     val newAgentPath = PathFinding.findPath2(currentNode, box, currentNode.getAgent.getPosition, edges)
     currentNode.boxes.filter(box => !boxPath.contains(box.getPosition)
@@ -305,7 +317,7 @@ object Solution {
     val newSolution = Search.search(strategy, currentNode, threshold, dangerZone)
     resetNode(savedGoals, node)
     newSolution match {
-      case null => solveReduced(goal, goalMatch, dangerZone, solved, node, edges, threshold, depth + 1)
+      case null => solveReduced(goal, goalMatch, dangerZone, solved, node, edges, threshold, currentDepth + 1)
       case list if list.isEmpty => null
       case _ => solution ++ newSolution
     }

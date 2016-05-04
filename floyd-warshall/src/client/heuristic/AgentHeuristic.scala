@@ -1,6 +1,5 @@
 package client.heuristic
 
-import java.util
 import scala.collection.JavaConversions._
 
 import client.PathFinding
@@ -12,11 +11,7 @@ import searchclient.{Box, Node, Position}
   */
 class AgentHeuristic(boxToRemove: Box, edges: Map[Position, List[Position]]) extends Heuristic {
   def h(n: Node): Int = {
-    val agent = n.getAgent
-    val agentPath: List[Position] = PathFinding.findPath2(n, boxToRemove, n.getAgent.getPosition, edges)
-    val agentPathSet = new util.HashSet[Position]()
-    agentPathSet.addAll(agentPath)
-    agent.setAgentPath(agentPathSet)
-    agentPath.length
+    val matchingBox = n.boxes.find(box => box.getId == boxToRemove.getId).get
+    PathFinding.findPath2(n, matchingBox, n.getAgent.getPosition, edges).length
   }
 }

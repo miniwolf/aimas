@@ -35,16 +35,16 @@ Work in progress:
 |Humans|
 |JasonFour|336|334|1.091|
 |JasonX|771|719|8.424|
-|Masters|1083|1053|2.717|
+|Masters|1041|1041|2.302|
 |PHOBAR|
 |schwenke|
-|Skynet|577|?|27.128|
+|Skynet|571|555|43.865|
 |WatsOn|940|940|16.692|
 #####Easy
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
-|bruteforce|33|33|0.394|
-|Crunch|101|98|0.415|
+|bruteforce|35|33|0.394|
+|Crunch|101|98|0.573|
 |DeliRobot|75|75|0.66|
 |Firefly|82|60|0.433|
 |group42|375|375|2.933|
@@ -56,13 +56,13 @@ Work in progress:
 |Alpha|
 |Ateam|256|239|1.183|
 |BullFight|282|252|2.298|
-|DCN|852|852|9.737|
-|FOAM|106|?|2.96|
-|holdkaeft|204|188|1.371|
+|DCN|852|852|10.931|
+|FOAM|102|102|2.145|
+|holdkaeft|202|188|1.264|
 |null|113|91|0.525|
-|Talos|1378|1380|18.904|
-|TeamNoOp|124|114|1.329|
-|wallE|412|390|4.222|
+|Talos|1378|1378|18.904|
+|TeamNoOp|124|114|2.125|
+|wallE|382|382|8.179|
 #####Short Solution
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
