@@ -58,31 +58,35 @@ public class Search {
         }
     }
 
-    public static boolean agentGoalState
-            (Node leafNode, Position goalBoxPos, int boxToRemoveId, HashSet<Position> boxPath,
-             scala.collection.immutable.List<Position> immovableBoxes) {
+    private static boolean extendedGoalState(Node leafNode, Position goalBoxPos, int boxToRemoveId,
+                                             scala.collection.immutable.HashSet<Position> boxPath,
+                                             scala.collection.immutable.List<Position> immovableBoxes,
+                                             scala.collection.immutable.List<Position> needToAvoid) {
         Box boxToRemove = leafNode.boxes.stream().filter(box -> box.getId() == boxToRemoveId).findFirst().get();
         Position boxToRemovePosition = boxToRemove.getPosition();
+        if ( needToAvoid.contains(boxToRemovePosition) ) {
+            return false;
+        }
+
+        //val dangerZones = findDangerousPositions(vertices, edges, tempBoxGoal, realGoalBox, box.getPosition, lockedNode.ChildNode())
+        // TODO: use danger zone to stop the agent from blocking itself from the actual goal box.
         Position agentPosition = leafNode.getAgent().getPosition();
         if ( Math.abs(boxToRemovePosition.getX() - agentPosition.getX()) + Math.abs(boxToRemovePosition.getY() - agentPosition.getY()) != 1 ) {
             return false;
         }
         scala.collection.immutable.List<Position> agentPath = PathFinding.searchEmpty(goalBoxPos, leafNode.getAgent().getPosition(), leafNode, immovableBoxes);
-        if ( agentPath.isEmpty() ) {
-            return false;
-        }
-        return !agentPath.contains(boxToRemovePosition) && !boxPath.contains(boxToRemovePosition);
+        return agentPath.nonEmpty() && !agentPath.contains(boxToRemovePosition) && !boxPath.contains(boxToRemovePosition);
     }
 
-    public static LinkedList<Node> agentRemovalSearch
+    public static LinkedList<Node> removalSearch
             (Strategy.AdvancedStrategy strategy, Node initialState, int threshold, int boxToRemoveId,
-             List<Position> dangerZone, HashSet<Position> boxPath, Position goalBoxPos,
-             scala.collection.immutable.List<Position> immovableBoxes, int depth) throws IOException {
+             scala.collection.immutable.HashSet<Position> boxPath, Position goalBoxPos,
+             scala.collection.immutable.List<Position> immovableBoxes,
+             scala.collection.immutable.List<Position> needToAvoid) throws IOException {
         System.err.format("client.Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(initialState);
 
         int iterations = 0;
-        List<Node> solutionLists = new ArrayList<>();
         while ( true ) {
             if ( SearchClient.Memory.shouldEnd() ) {
                 System.err.format("Memory limit almost reached, terminating search %s\n", SearchClient.Memory.stringRep());
@@ -90,23 +94,16 @@ public class Search {
             }
 
             if ( strategy.frontierIsEmpty() ) {
-                if ( !solutionLists.isEmpty() ) {
-                    return solutionLists.get(solutionLists.size() - 1).extractPlan();
-                }
                 return null;
             }
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if ( agentGoalState(leafNode, goalBoxPos, boxToRemoveId, boxPath, immovableBoxes) ) {
-                if ( solutionLists.size() < depth ) {
-                    solutionLists.add(leafNode);
-                } else {
-                    System.err.println("\nSummary for " + strategy);
-                    System.err.println(strategy.searchStatus());
-                    System.err.println("\n");
-                    return leafNode.extractPlan();
-                }
+            if ( extendedGoalState(leafNode, goalBoxPos, boxToRemoveId, boxPath, immovableBoxes, needToAvoid) ) {
+                System.err.println("\nSummary for " + strategy);
+                System.err.println(strategy.searchStatus());
+                System.err.println("\n");
+                return leafNode.extractPlan();
             }
 
             if ( leafNode.g() > threshold ) {

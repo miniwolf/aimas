@@ -33,42 +33,42 @@ Work in progress:
 |Dillema|
 |DinMor|
 |Humans|
-|JasonFour|336|334|0.937|
-|JasonX|771|719|8.424|
-|Masters|1041|1041|1.931|
+|JasonFour|334|334|1.179|
+|JasonX|733|719|2.679|
+|Masters|1087|1041|2.049|
 |PHOBAR|
 |schwenke|
-|Skynet|595|555|35.104|
-|WatsOn|844|844|11.553|
+|Skynet|553|553|62.632|
+|WatsOn|949|844|18.87|
 #####Easy
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
-|bruteforce|35|33|0.394|
-|Crunch|101|98|0.573|
-|DeliRobot|75|75|0.446|
+|bruteforce|35|33|0.363|
+|Crunch|101|98|0.523|
+|DeliRobot|75|75|0.428|
 |Firefly|82|60|0.386|
 |group42|375|375|2.933|
-|Ryther|170|164|1.77|
-|sampdoria|57|37|0.293|
+|Ryther|170|164|1.957|
+|sampdoria|57|37|0.351|
 #####Medium
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
 |Alpha|
-|Ateam|256|239|1.183|
-|BullFight|282|252|1.888|
-|DCN|852|852|10.931|
-|FOAM|104|102|2.879|
-|holdkaeft|202|188|1.264|
-|null|111|91|0.486|
-|Talos|1378|1378|19.349|
-|TeamNoOp|120|114|1.179|
-|wallE|382|382|8.179|
+|Ateam|256|239|0.824|
+|BullFight|266|252|3.299|
+|DCN|852|852|10.141|
+|FOAM|102|102|1.316|
+|holdkaeft|188|188|1.626|
+|null|91|91|0.486|
+|Talos|1366|1366|19.017|
+|TeamNoOp|122|114|1.11|
+|wallE|338|338|17.351|
 #####Short Solution
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
-|AgentSharp|82|?|1.179
-|LionFish|40|40|0.543
-|RageQuit|28|26|0.656|
+|AgentSharp|82|?|1.179|
+|LionFish|40|40|0.502|
+|RageQuit|26|26|0.419|
 #####Long Solution
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
@@ -82,9 +82,10 @@ Work in progress:
 |sokobanLevel96|83|?|0.599|
 |friendOfBFS|24|24|0.462|
 |friendOfDFS|10|10|0.609|
-|a|83|83|0.466|
-|b|65|65|0.468|
-|c|26|26|0.791|
+|a|81|81|0.441|
+|b|61|61|1.024|
+|c|26|26|0.432|
 |FortyTwoHard|
 |FortyTwoMedium|95|95|4.58|
-|FortyTwoEasy|9|9|0.456|
+|FortyTwoEasy|5|5|0.268|
+|FortyTwoOkay|52|34|14.209|
