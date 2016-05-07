@@ -32,14 +32,14 @@ Work in progress:
 |:---|:---|:---|:---|
 |Dillema|
 |DinMor|
-|Humans|
-|JasonFour|334|334|1.179|
+|Humans|639|639|12.097|641
+|JasonFour|334|334|1.179||1.1544
 |JasonX|733|719|2.679|
 |Masters|1087|1041|2.049|
-|PHOBAR|
+|PHOBAR|914|914|22.656|
 |schwenke|
 |Skynet|553|553|62.632|
-|WatsOn|949|844|18.87|
+|WatsOn|912|844|18.87|
 #####Easy
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
@@ -53,7 +53,7 @@ Work in progress:
 #####Medium
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
-|Alpha|
+|Alpha|136|136|0.834|
 |Ateam|256|239|0.824|
 |BullFight|266|252|3.299|
 |DCN|852|852|10.141|
@@ -66,7 +66,7 @@ Work in progress:
 #####Short Solution
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
-|AgentSharp|82|?|1.179|
+|AgentSharp|101|82|0.942|
 |LionFish|40|40|0.502|
 |RageQuit|26|26|0.419|
 #####Long Solution

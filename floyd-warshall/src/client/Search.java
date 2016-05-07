@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author miniwolf
@@ -61,10 +62,16 @@ public class Search {
     private static boolean extendedGoalState(Node leafNode, Position goalBoxPos, int boxToRemoveId,
                                              scala.collection.immutable.HashSet<Position> boxPath,
                                              scala.collection.immutable.List<Position> immovableBoxes,
-                                             scala.collection.immutable.List<Position> needToAvoid) {
+                                             scala.collection.immutable.List<Position> needToAvoid,
+                                             scala.collection.immutable.List<Position> dangerZone) {
         Box boxToRemove = leafNode.boxes.stream().filter(box -> box.getId() == boxToRemoveId).findFirst().get();
         Position boxToRemovePosition = boxToRemove.getPosition();
         if ( needToAvoid.contains(boxToRemovePosition) ) {
+            return false;
+        }
+        List<Box> boxesMovable = leafNode.boxes.stream().filter(Box::isMovable).collect(Collectors.toList());
+        List<Box> issues = boxesMovable.stream().filter(box -> dangerZone.contains(box.getPosition())).collect(Collectors.toList());
+        if ( !issues.isEmpty() ) {
             return false;
         }
 
@@ -82,7 +89,8 @@ public class Search {
             (Strategy.AdvancedStrategy strategy, Node initialState, int threshold, int boxToRemoveId,
              scala.collection.immutable.HashSet<Position> boxPath, Position goalBoxPos,
              scala.collection.immutable.List<Position> immovableBoxes,
-             scala.collection.immutable.List<Position> needToAvoid) throws IOException {
+             scala.collection.immutable.List<Position> needToAvoid,
+             scala.collection.immutable.List<Position> dangerZone) throws IOException {
         System.err.format("client.Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(initialState);
 
@@ -99,7 +107,7 @@ public class Search {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if ( extendedGoalState(leafNode, goalBoxPos, boxToRemoveId, boxPath, immovableBoxes, needToAvoid) ) {
+            if ( extendedGoalState(leafNode, goalBoxPos, boxToRemoveId, boxPath, immovableBoxes, needToAvoid, dangerZone) ) {
                 System.err.println("\nSummary for " + strategy);
                 System.err.println(strategy.searchStatus());
                 System.err.println("\n");
