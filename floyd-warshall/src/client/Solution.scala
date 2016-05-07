@@ -172,7 +172,21 @@ object Solution {
         val strategy = new AdvancedStrategy(new AgentHeuristic(box, boxPath, dangerZone, emptyEdges))
         Search.removalSearch(strategy, lockedNode, 200000, box.getId, state.boxPath,
                              realGoalBox.getPosition, state.immovableBoxes.map(f=>f._2), needToAvoid, dangerZone) match {
-          case null if state.solved.isEmpty => (state, null)
+          case null if state.solved.isEmpty =>
+            lockedNode.boxes.foreach(_.setMovable(true))
+            Search.removalSearch(strategy, lockedNode, 200000, box.getId, state.boxPath,
+                                 realGoalBox.getPosition, state.immovableBoxes.map(f=>f._2), needToAvoid, dangerZone) match {
+              case null => (state, null)
+              case solution =>
+                val newBoxPos = solution.getLast.boxes.find(b => b.getId == box.getId).get.getPosition
+                val newImmovableBoxes = (box.getId, newBoxPos) :: state.immovableBoxes
+                val newNode = solution.last.ChildNode()
+                newNode.parent = null
+                val newSolutionMap = solutionMap + (box.getId -> (solution.toList, newBoxPos :: needToAvoid))
+                val newSolved = state.solved ++ List(box)
+                val newState = RemovalState(cdr, newSolved, newNode, state.boxPath, state.goalBoxId, newImmovableBoxes, state)
+                removeBoxesFromPath(newState, newSolutionMap, dangerZone)
+            }
           case null =>
             val newSolutionMap = solutionMap.filter(_._1 != box.getId)
             removeBoxesFromPath(state.parent, newSolutionMap, dangerZone)
