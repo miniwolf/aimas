@@ -52,7 +52,7 @@ public class Node {
         return this.parent == null;
     }
 
-    public boolean isGoalState(List<Position> dangerZone) {
+    public boolean isGoalState(HashSet<Position> dangerZone) {
         if ( dangerZone.contains(agent.getPosition()) ) {
             return false;
         }
@@ -91,26 +91,6 @@ public class Node {
                     expandedNodes.add(n);
                     break;
                 }
-                case Push: {
-                    // Make sure that there's actually a box to move
-                    Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(agentPos)).findFirst();
-                    if ( !b.isPresent() || !b.get().isMovable() ) {
-                        continue;
-                    }
-                    int boxIdx = boxes.indexOf(b.get());
-                    int newBoxRow = newAgentRow + dirToRowChange(c.dir2);
-                    int newBoxCol = newAgentCol + dirToColChange(c.dir2);
-                    // .. and that new cell of box is free
-                    if ( !cellIsFree(newBoxCol, newBoxRow) ) {
-                        continue;
-                    }
-                    Node n = this.ChildNode();
-                    n.action = c;
-                    n.getAgent().setPosition(agentPos);
-                    n.boxes.get(boxIdx).setPosition(new Position(newBoxCol, newBoxRow));
-                    expandedNodes.add(n);
-                    break;
-                }
                 case Pull: {
                     // Cell is free where agent is going
                     if ( !cellIsFree(newAgentCol, newAgentRow) ) {
@@ -135,6 +115,27 @@ public class Node {
                     expandedNodes.add(n);
                     break;
                 }
+                case Push: {
+                    // Make sure that there's actually a box to move
+                    Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(agentPos)).findFirst();
+                    if ( !b.isPresent() || !b.get().isMovable() ) {
+                        continue;
+                    }
+                    int boxIdx = boxes.indexOf(b.get());
+                    int newBoxRow = newAgentRow + dirToRowChange(c.dir2);
+                    int newBoxCol = newAgentCol + dirToColChange(c.dir2);
+                    // .. and that new cell of box is free
+                    if ( !cellIsFree(newBoxCol, newBoxRow) ) {
+                        continue;
+                    }
+                    Node n = this.ChildNode();
+                    n.action = c;
+                    n.getAgent().setPosition(agentPos);
+                    n.boxes.get(boxIdx).setPosition(new Position(newBoxCol, newBoxRow));
+                    expandedNodes.add(n);
+                    break;
+                }
+
             }
         }
         Collections.shuffle(expandedNodes, rnd);

@@ -38,7 +38,7 @@ public class Command {
 	};
 	
 	public static enum type {
-		Move, Push, Pull
+		Move, Pull, Push
 	};
 
 	public final type actType;

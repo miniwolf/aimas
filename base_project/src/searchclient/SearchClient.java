@@ -90,7 +90,7 @@ public class SearchClient {
         //strategy = new StrategyBestFirst( new WeightedAStar2( client.initialState ) );
         //strategy = new StrategyBestFirst( new Greedy2( client.initialState ) );
 
-        LinkedList<Node> solution = client.Search(strategy);
+        List<Node> solution = client.Search(strategy).getSolution();
 
         if ( solution == null ) {
             System.err.println("Unable to solve level");
@@ -113,7 +113,7 @@ public class SearchClient {
         }
     }
 
-    public LinkedList<Node> Search(Strategy strategy) throws IOException {
+    public SearchResult Search(Strategy strategy) throws IOException {
         System.err.format("Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(this.initialState);
 
@@ -137,8 +137,8 @@ public class SearchClient {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if ( leafNode.isGoalState(new ArrayList<>()) ) {
-                return leafNode.extractPlan();
+            if ( leafNode.isGoalState(new HashSet<>()) ) {
+                return new SearchResult(leafNode.extractPlan(), false);
             }
 
             strategy.addToExplored(leafNode);

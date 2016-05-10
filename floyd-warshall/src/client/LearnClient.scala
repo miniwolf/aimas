@@ -78,7 +78,9 @@ object LearnClient extends App {
     Node.goals.foreach { case (goalPos, goalChar) =>
       def getBestBox(currentBest: Box, boxes: List[Box]): Int = {
         boxes match {
-          case Nil => currentBest.getId
+          case Nil =>
+            currentBest.setGoalLink(goalPos)
+            currentBest.getId
           case box :: cdr if currentBest == null =>
             val currentPath = PathFinding.findPath2(initialState, box, goalPos, edges)
             box.setGoalPath(currentPath)

@@ -1,3 +1,4 @@
+import java.util
 import java.util.function.Consumer
 
 import searchclient.Command.dir
@@ -43,7 +44,7 @@ class QState(val state: Node, qParent: QState) extends Node(if ( qParent == null
   def isFullyExpanded: Boolean = children.nonEmpty && children.size == actions.size
 
   @inline
-  final def isGoal: Boolean = state.isGoalState(List())
+  final def isGoal: Boolean = state.isGoalState(new util.HashSet[Position]())
 
   override def toString: String =
     s"Instance:\n${state.toString}"

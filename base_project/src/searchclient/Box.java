@@ -9,6 +9,7 @@ import java.util.List;
 public class Box implements Cloneable {
     private Position position;
     private Character character;
+    private Position goalLink;
     private List<Position> goalPath = new ArrayList<>();
     private int id;
     private boolean movable = true;
@@ -52,11 +53,20 @@ public class Box implements Cloneable {
         this.movable = movable;
     }
 
+    public Position getGoalLink() {
+        return goalLink;
+    }
+
+    public void setGoalLink(Position goalLink) {
+        this.goalLink = goalLink;
+    }
+
     @Override
     public Box clone() {
         Box res = new Box(position, character, id);
         res.setGoalPath(goalPath);
         res.setMovable(movable);
+        res.setGoalLink(goalLink);
         return res;
     }
 

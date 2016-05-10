@@ -21,6 +21,24 @@ object Dependency {
     }
   }
 
+  def testForIssues(goalPos: Position, node: Node): Boolean = {
+    val tests = List(0,1,-1)
+    var count = 0
+    tests.foreach { case dx =>
+      tests.foreach { case dy =>
+        val testPos = new Position(goalPos.getX + dx, goalPos.getY + dy)
+        if ( !testPos.equals(goalPos) ) {
+          if ( Node.walls.contains(testPos) ) {
+            count += 1
+          } else if ( node.boxes.exists(box => !box.isMovable && box.getPosition.equals(testPos)) ) {
+            count += 1
+          }
+        }
+      }
+    }
+    count > 1
+  }
+
   def getGoalDependencies(permutations: List[Position], goalMatch: Map[Position, Int],
                           initialState: Node): (Map[Position, List[Position]], Map[Position, Int]) = {
     def calcDependency(goalDependencies: Map[Position, List[Position]],
@@ -28,10 +46,14 @@ object Dependency {
       goals match {
         case Nil => goalDependencies
         case goal :: cdr =>
-          Node.walls.add(goal)
-          val dependencies = getGoalDependency(goal, permutations, goalMatch, initialState)
-          Node.walls.remove(goal)
-          calcDependency(goalDependencies + (goal -> dependencies), cdr)
+          if ( testForIssues(goal, initialState) ) {
+            Node.walls.add(goal)
+            val dependencies = getGoalDependency(goal, permutations, goalMatch, initialState)
+            Node.walls.remove(goal)
+            calcDependency(goalDependencies + (goal -> dependencies), cdr)
+          } else {
+            calcDependency(goalDependencies + (goal -> List()), cdr)
+          }
       }
     }
     if ( permutations.size == 1 ) {
