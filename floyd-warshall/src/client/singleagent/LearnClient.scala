@@ -1,8 +1,11 @@
-package client
+package client.singleagent
 
 import java.io.{BufferedReader, InputStreamReader}
 import java.util.function.ToIntFunction
 
+import client.{Graph, PathFinding, Solution}
+import core.singleagent.{SingleAgent, SingleNode}
+import core.{Box, Node, Position}
 import searchclient.SearchClient.Memory
 import searchclient._
 
@@ -35,13 +38,13 @@ object LearnClient extends App {
     val goalList = Node.goals.map { case (goalPos, goalChar) => goalPos -> goalChar }.toMap
 
     val solution: List[Node] = Solution.findSolution(goalList.keys.toList, goalMatches, List(), List(),
-                                            learnClient.startState)
+                                                           learnClient.startState)
     val timeSpent = (System.currentTimeMillis - startTime) / 1000f
     System.err.println(s"Summary: Time: $timeSpent\t ${Memory.stringRep()}")
     Node.walls.removeAll(goalList.keys.toList)
     Node.goals = Node.goals ++ goalList
     solution.foreach { case n: Node =>
-      val act = n.action.toActionString
+      val act = n.getAction
       println(act)
       val response: String = serverMessages.readLine
       if ( response.contains("false") ) {
@@ -67,7 +70,7 @@ object LearnClient extends App {
     val goalList = Node.goals.map { case (goalPos, goalChar) => goalPos -> goalChar }.toMap
 
     val solution: List[Node] = Solution.findSolution(goalList.keys.toList, goalMatches, List(), List(),
-                                                     learnClient.startState)
+                                                           learnClient.startState)
     val timeSpent = (System.currentTimeMillis - startTime) / 1000f
     println(s"Summary: Time: $timeSpent\t ${Memory.stringRep()}")
     println(s"SolutionLength: ${solution.length}")
@@ -94,7 +97,7 @@ object LearnClient extends App {
             }
         }
       }
-      val boxes = initialState.boxes.filter(box => goalChar.equals(Character.toLowerCase(box.getCharacter))
+      val boxes = initialState.getBoxes.filter(box => goalChar.equals(Character.toLowerCase(box.getCharacter))
                                                    && !goalMatch.values.contains(box.getId)).toList
       goalMatch += (goalPos -> getBestBox(null, boxes))
     }
@@ -104,6 +107,6 @@ object LearnClient extends App {
 
 class LearnClient(searchClient: SearchClient) {
   val startState = searchClient.initialState
-  val emptyStartState = new Node(startState.parent)
-  emptyStartState.setAgent(startState.getAgent)
+  val emptyStartState = new SingleNode(startState.parent)
+  emptyStartState.setAgent(new SingleAgent(startState.getAgent.getPosition, 0))
 }

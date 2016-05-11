@@ -38,7 +38,7 @@ Work in progress:
 |Masters|1089|1041|3.257|
 |PHOBAR|928|914|22.248|
 |schwenke|
-|Skynet|561|553|26.329|
+|Skynet|565|553|27.708|
 |WatsOn|908|844|9.177|
 #####Easy
 |Level|Current Length|Known Best|Time(s)|

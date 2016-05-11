@@ -1,24 +1,27 @@
 package searchclient;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.*;
+import core.Agent;
+import core.Box;
+import core.Position;
+import core.multiagent.MultiAgent;
+import core.multiagent.MultiBox;
+import core.multiagent.MultiNode;
 
-import core.*;
-import core.Strategy.*;
-import core.singleagent.SingleAgent;
-import core.singleagent.SingleBox;
-import core.singleagent.SingleNode;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class SearchClient {
-    public SingleNode initialState = null;
+public class MultiSearchClient {
+    public MultiNode initialState = null;
 
-    public SearchClient(List<String> lines) throws Exception {
+    public List<Agent> agents = new ArrayList<>();
+
+    public MultiSearchClient(List<String> lines) throws Exception {
         Map<Character, String> colors = new HashMap<>();
         String line, color;
 
-        int colorLines = 0, levelLines = 0;
+        int levelLines = 0;
 
         // Read lines specifying colors
         int index = 0;
@@ -30,15 +33,10 @@ public class SearchClient {
             for ( String id : colonSplit[1].split(",") ) {
                 colors.put(id.trim().charAt(0), color);
             }
-            colorLines++;
             index++;
         }
 
-        if ( colorLines > 0 ) {
-            error("Box colors not supported");
-        }
-
-        initialState = new SingleNode(null);
+        initialState = new MultiNode(null);
         int id = 0;
         for ( int i = index; i < lines.size(); i++ ) {
             line = lines.get(i);
@@ -46,17 +44,17 @@ public class SearchClient {
                 char chr = line.charAt(j);
                 Position pos = new Position(j, levelLines);
                 if ( '+' == chr ) { // Walls
-                    Node.walls.add(pos);
+                    MultiNode.walls.add(pos);
                 } else if ( '0' <= chr && chr <= '9' ) { // Agents
-                    initialState.setAgent(new SingleAgent(pos, 0)); // TODO: Does not support MA
+                    MultiAgent agent = new MultiAgent(pos, Character.getNumericValue(chr), colors.get(chr));
+                    initialState.putAgent(agent);
                 } else if ( 'A' <= chr && chr <= 'Z' ) { // Boxes
-                    initialState.getBoxes().add(new SingleBox(pos, chr, id));
+                    initialState.boxes.add(new MultiBox(pos, chr, id, colors.get(chr)));
                     id++;
                 } else if ( 'a' <= chr && chr <= 'z' ) { // Goal cells
-                    Node.goals.put(pos, chr);
+                    MultiNode.goals.put(pos, chr);
                 }
             }
-
             levelLines++;
         }
     }

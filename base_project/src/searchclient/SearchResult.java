@@ -1,6 +1,7 @@
 package searchclient;
 
-import java.util.LinkedList;
+import core.Node;
+
 import java.util.List;
 
 /**

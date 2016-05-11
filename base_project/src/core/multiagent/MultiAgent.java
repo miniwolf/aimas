@@ -1,34 +1,22 @@
-package searchclient;
+package core.multiagent;
 
-import java.util.HashMap;
+import core.Agent;
+import core.Position;
+
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author miniwolf
  */
-public class Agent {
-    private Position position;
-    private int id;
+public class MultiAgent extends Agent {
+    private String color;
     private HashSet<Position> agentPath;
 
-    public Agent(Position position, int id) {
-        this.position = position;
-        this.id = id;
+    public MultiAgent(Position position, int id, String color) {
+        super(position, id);
+        this.color = color;
     }
 
-    public Position getPosition() {
-        return position;
-    }
-
-    public void setPosition(Position position) {
-        this.position = position;
-    }
-
-    public int getId() {
-        return id;
-    }
 
     public void setAgentPath(HashSet<Position> agentPath) {
         this.agentPath = agentPath;
@@ -38,14 +26,18 @@ public class Agent {
         return agentPath;
     }
 
+    public String getColor() {
+        return color;
+    }
+
     @Override
     public boolean equals(Object o) {
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;
 
-        Agent agent = (Agent) o;
+        MultiAgent agent = (MultiAgent) o;
 
-        return id == agent.id &&
+        return id == agent.id && color.equals(agent.color) &&
                (position != null ? position.equals(agent.position) : agent.position == null);
     }
 
@@ -56,3 +48,4 @@ public class Agent {
         return result;
     }
 }
+

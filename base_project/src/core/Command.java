@@ -1,4 +1,4 @@
-package searchclient;
+package core;
 
 import java.util.LinkedList;
 

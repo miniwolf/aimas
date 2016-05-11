@@ -2,7 +2,7 @@ package client.heuristic
 
 import java.util.Comparator
 
-import searchclient.Node
+import core.Node
 
 /**
   * Created by miniwolf on 03-05-2016.

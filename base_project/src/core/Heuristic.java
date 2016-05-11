@@ -1,4 +1,7 @@
-package searchclient;
+package core;
+
+import core.singleagent.SingleBox;
+import core.singleagent.SingleNode;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,12 +18,12 @@ public abstract class Heuristic implements Comparator<Node> {
     }
 
     public int h(Node n) {
-        List<Box> boxes = n.boxes;
-        Map<searchclient.Position, Character> goals = Node.goals;
+        List<Box> boxes = n.getBoxes();
+        Map<Position, Character> goals = SingleNode.goals;
         HashMap<Position, Character> goalsChars = new HashMap<>();
         HashMap<Position, Character> boxesChars = new HashMap<>();
-        for ( int i = 1; i < Node.MAX_ROW; i++ ) {
-            for ( int j = 1; j < Node.MAX_COLUMN; j++ ) {
+        for ( int i = 1; i < SingleNode.MAX_ROW; i++ ) {
+            for ( int j = 1; j < SingleNode.MAX_COLUMN; j++ ) {
                 Position pos = new Position(i, j);
                 Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
                 Character boxChar = b.isPresent() ? b.get().getCharacter() : null;
@@ -46,7 +49,7 @@ public abstract class Heuristic implements Comparator<Node> {
             List<Position> positions = goalsChars.keySet().stream().filter(index -> goalsChars.get(index) == lowerC)
                     .collect(Collectors.toList());
             if ( !positions.isEmpty() ) {
-                double bestDistance = Node.MAX_COLUMN + Node.MAX_ROW;
+                double bestDistance = SingleNode.MAX_COLUMN + SingleNode.MAX_ROW;
                 for ( Position newPos : positions ) {
                     double newDistance = Math.sqrt((newPos.getX() - pos.getX()) * (newPos.getX() - pos.getX()) + (newPos.getY() - pos.getY()) * (newPos.getY() - pos.getY()));
                     if ( newDistance < bestDistance ) {
@@ -59,13 +62,13 @@ public abstract class Heuristic implements Comparator<Node> {
         return value;
     }
 
-    public int h2(Node n) {
-        List<Box> boxes = n.boxes;
-        Map<Position, Character> goals = Node.goals;
+    public int h2(SingleNode n) {
+        List<Box> boxes = n.getBoxes();
+        Map<Position, Character> goals = SingleNode.goals;
         HashMap<Position, Character> goalsChars = new HashMap<>();
         HashMap<Position, Character> boxesChars = new HashMap<>();
-        for ( int i = 0; i < Node.MAX_ROW; i++ ) {
-            for ( int j = 0; j < Node.MAX_COLUMN; j++ ) {
+        for ( int i = 0; i < SingleNode.MAX_ROW; i++ ) {
+            for ( int j = 0; j < SingleNode.MAX_COLUMN; j++ ) {
                 Position pos = new Position(i, j);
                 Optional<Box> b = boxes.stream().filter(box -> box.getPosition().equals(pos)).findFirst();
                 Character boxChar = b.isPresent() ? b.get().getCharacter() : null;
@@ -126,116 +129,6 @@ public abstract class Heuristic implements Comparator<Node> {
 
         public String toString() {
             return "A* evaluation";
-        }
-    }
-
-    public static class WeightedAStar extends Heuristic {
-        private int W;
-
-        public WeightedAStar(Node initialState) {
-            super(initialState);
-            W = 5; // You're welcome to test this out with different values, but for the reporting part you must at least indicate benchmarks for W = 5
-        }
-
-        public int f(Node n) {
-            return n.g() + W * h(n);
-        }
-
-        public String toString() {
-            return String.format("WA*(%d) evaluation", W);
-        }
-    }
-
-    public static class Greedy extends Heuristic {
-
-        public Greedy(Node initialState) {
-            super(initialState);
-        }
-
-        public int f(Node n) {
-            return h(n);
-        }
-
-        public String toString() {
-            return "Greedy evaluation";
-        }
-    }
-
-    public static class IDAStar extends Heuristic {
-        public IDAStar(Node initialState) {
-            super(initialState);
-        }
-
-        @Override
-        public int f(Node n) {
-            return n.g() + h(n);
-        }
-
-        @Override
-        public String toString() {
-            return "IDA* evaluation";
-        }
-    }
-
-    public static class AStar2 extends Heuristic {
-        public AStar2(Node initialState) {
-            super(initialState);
-        }
-
-        public int f(Node n) {
-            return n.g() + h2(n);
-        }
-
-        public String toString() {
-            return "A* evaluation";
-        }
-    }
-
-    public static class WeightedAStar2 extends Heuristic {
-        private int W;
-
-        public WeightedAStar2(Node initialState) {
-            super(initialState);
-            W = 5; // You're welcome to test this out with different values, but for the reporting part you must at least indicate benchmarks for W = 5
-        }
-
-        public int f(Node n) {
-            return n.g() + W * h2(n);
-        }
-
-        public String toString() {
-            return String.format("WA*(%d) evaluation", W);
-        }
-    }
-
-    public static class Greedy2 extends Heuristic {
-
-        public Greedy2(Node initialState) {
-            super(initialState);
-        }
-
-        public int f(Node n) {
-            return h2(n);
-        }
-
-        public String toString() {
-            return "Greedy evaluation";
-        }
-    }
-
-    public static class IDAStar2 extends Heuristic {
-        public IDAStar2(Node initialState) {
-            super(initialState);
-        }
-
-        @Override
-        public int f(Node n) {
-            return n.g() + h2(n);
-        }
-
-        @Override
-        public String toString() {
-            return "IDA* evaluation";
         }
     }
 }

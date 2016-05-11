@@ -1,13 +1,15 @@
-package client; /**
- * Created by miniwolf on 03-04-2016.
- */
+package client;
 
 import java.util.*;
 
 import client.heuristic.Heuristic;
+import core.Node;
 import searchclient.SearchClient.Memory;
-import searchclient.Node;
+import core.Node;
 
+/**
+ * @author miniwolf
+ */
 public abstract class Strategy {
     public HashSet<Node> explored;
     public long startTime = System.currentTimeMillis();

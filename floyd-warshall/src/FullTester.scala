@@ -1,14 +1,9 @@
-import java.io.File
 
-import client.LearnClient
-import searchclient.Node
-
-import scala.io.Source
 
 /**
   * Created by miniwolf on 03-05-2016.
   */
-object FullTester extends App {
+/*object FullTester extends App {
   override def main(args: Array[String]) {
     val listOfFiles = recursiveListFiles(new File("base_project/levels"))
     System.err.close()
@@ -29,4 +24,4 @@ object FullTester extends App {
     val these = f.listFiles.filter(file => !file.getPath.contains("multi_agent"))
     these.filter(!_.isDirectory) ++ these.filter(file => file.isDirectory && !file.getPath.contains("multi_agent")).flatMap(recursiveListFiles)
   }
-}
+} */

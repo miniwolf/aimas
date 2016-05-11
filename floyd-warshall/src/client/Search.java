@@ -1,11 +1,13 @@
 package client;
 
-import searchclient.*;
+import core.Box;
+import core.Node;
+import core.Position;
+import searchclient.SearchClient;
+import searchclient.SearchResult;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,8 +16,7 @@ import java.util.stream.Collectors;
  */
 public class Search {
     public static SearchResult search(Strategy.AdvancedStrategy strategy, Node initialState,
-                                          int threshold,
-                                          HashSet<Position> dangerZone) throws IOException {
+                                      int threshold, HashSet<Position> dangerZone, List<Box> notNeededBoxes) throws IOException {
         System.err.format("Search starting with strategy %s\n", strategy);
         strategy.addToFrontier(initialState);
         boolean reachedThreshold = false;
@@ -32,7 +33,7 @@ public class Search {
 
             Node leafNode = strategy.getAndRemoveLeaf();
 
-            if ( leafNode.isGoalState(dangerZone) ) {
+            if ( leafNode.isGoalState(dangerZone, notNeededBoxes) ) {
                 System.err.println("\nSummary for " + strategy);
                 System.err.println(strategy.searchStatus());
                 System.err.println("\n");
@@ -49,7 +50,7 @@ public class Search {
             }
 
             strategy.addToExplored(leafNode);
-            ArrayList<Node> expandedNodes = leafNode.getExpandedNodes();
+            List<Node> expandedNodes = leafNode.getExpandedNodes();
             // The list of expanded nodes is shuffled randomly; see Node.java
             expandedNodes.stream().filter(n -> !strategy.isExplored(n) && !strategy.inFrontier(n)).forEach(strategy::addToFrontier);
             iterations++;
@@ -61,7 +62,7 @@ public class Search {
                                              scala.collection.immutable.List<Position> immovableBoxes,
                                              scala.collection.immutable.List<Position> needToAvoid,
                                              scala.collection.immutable.HashSet<Position> dangerZone) {
-        Box boxToRemove = leafNode.boxes.stream().filter(box -> box.getId() == boxToRemoveId).findFirst().get();
+        Box boxToRemove = leafNode.getBoxes().stream().filter(box -> box.getId() == boxToRemoveId).findFirst().get();
         Position boxToRemovePosition = boxToRemove.getPosition();
         Position agentPosition = leafNode.getAgent().getPosition();
         if ( Math.abs(boxToRemovePosition.getX() - agentPosition.getX()) + Math.abs(boxToRemovePosition.getY() - agentPosition.getY()) != 1 ) {
@@ -70,7 +71,7 @@ public class Search {
         if ( needToAvoid.contains(boxToRemovePosition) ) {
             return false;
         }
-        List<Box> boxesMovable = leafNode.boxes.stream().filter(Box::isMovable).collect(Collectors.toList());
+        List<Box> boxesMovable = leafNode.getBoxes().stream().filter(Box::isMovable).collect(Collectors.toList());
         List<Box> issues = boxesMovable.stream().filter(box -> dangerZone.contains(box.getPosition())).collect(Collectors.toList());
         if ( !issues.isEmpty() ) {
             return false;
@@ -120,9 +121,8 @@ public class Search {
             }
 
             strategy.addToExplored(leafNode);
-            ArrayList<Node> expandedNodes = leafNode.getExpandedNodes();
             // The list of expanded nodes is shuffled randomly; see Node.java
-            expandedNodes.stream().filter(n -> !strategy.isExplored(n) && !strategy.inFrontier(n)).forEach(strategy::addToFrontier);
+            leafNode.getExpandedNodes().stream().filter(n -> !strategy.isExplored(n) && !strategy.inFrontier(n)).forEach(strategy::addToFrontier);
             iterations++;
         }
     }

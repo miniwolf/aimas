@@ -1,16 +1,16 @@
 package client
 
-import scala.collection.JavaConversions._
-import searchclient.{Node, Position}
+import core.{Node, Position}
 
+import scala.collection.JavaConversions._
 import scala.collection.immutable.HashSet
 
 /**
   * Created by miniwolf on 29-03-2016.
   */
 object Graph {
-  def construct(initialNode: Node): (HashSet[Position], Map[Position, List[Position]]) = {
-    construct(initialNode, List(), HashSet(), Map())
+  def construct(Node: Node): (HashSet[Position], Map[Position, List[Position]]) = {
+    construct(Node, List(), HashSet(), Map())
   }
 
   private def construct(node: Node, currentVisiting: List[Node], vertices: HashSet[Position],

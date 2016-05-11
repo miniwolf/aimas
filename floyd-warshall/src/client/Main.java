@@ -1,5 +1,7 @@
 package client;
 
+import client.singleagent.LearnClient$;
+
 /**
  * Created by miniwolf on 29-03-2016.
  */

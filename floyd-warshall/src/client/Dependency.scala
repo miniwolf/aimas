@@ -1,9 +1,10 @@
 package client
 
-import searchclient.{Agent, Node, Position}
+import core.singleagent.{SingleAgent, SingleNode}
+import core.{Node, Position}
 
-import scala.collection.immutable.Map
 import scala.collection.JavaConversions._
+import scala.collection.immutable.Map
 
 /**
   * Created by miniwolf on 26-04-2016.
@@ -30,7 +31,7 @@ object Dependency {
         if ( !testPos.equals(goalPos) ) {
           if ( Node.walls.contains(testPos) ) {
             count += 1
-          } else if ( node.boxes.exists(box => !box.isMovable && box.getPosition.equals(testPos)) ) {
+          } else if ( node.getBoxes.exists(box => !box.isMovable && box.getPosition.equals(testPos)) ) {
             count += 1
           }
         }
@@ -74,15 +75,15 @@ object Dependency {
 
   def getGoalDependency(permutation: Position, goals: List[Position], goalMatch: Map[Position, Int],
                         initialState: Node): List[Position] = {
-    val emptyStartState = new Node(initialState.parent)
-    emptyStartState.setAgent(new Agent(goals.last, 0))
+    val emptyStartState = new SingleNode(initialState.parent)
+    emptyStartState.setAgent(new SingleAgent(goals.last, 0))
     val (_, edges) = Graph.construct(emptyStartState)
 
     def findDependencies(dependencies: List[Position], goals: List[Position]): List[Position] = {
       goals match {
         case Nil => dependencies
         case goal :: cdr =>
-          val box = initialState.boxes.find(box => box.getId == goalMatch(goal)).get
+          val box = initialState.getBoxes.find(box => box.getId == goalMatch(goal)).get
           PathFinding.findPath2(initialState, box, goal, edges) match {
             case null | Nil if box.getPosition.equals(permutation) => findDependencies(dependencies, cdr)
             case null | Nil => findDependencies(goal :: dependencies, cdr)

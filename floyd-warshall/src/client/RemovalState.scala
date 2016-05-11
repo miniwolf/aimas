@@ -1,6 +1,6 @@
 package client
 
-import searchclient.{Box, Node, Position}
+import core.{Box, Node, Position}
 
 import scala.collection.immutable.HashSet
 
