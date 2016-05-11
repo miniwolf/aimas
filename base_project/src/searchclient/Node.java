@@ -53,7 +53,8 @@ public class Node {
     }
 
     public boolean isGoalState(HashSet<Position> dangerZone) {
-        if ( dangerZone.contains(agent.getPosition()) ) {
+        if ( dangerZone.contains(agent.getPosition()) ||
+             boxes.stream().anyMatch(box -> dangerZone.contains(box.getPosition())) ) {
             return false;
         }
         for ( Position pos: Node.goals.keySet() ) {

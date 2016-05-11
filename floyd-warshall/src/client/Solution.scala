@@ -115,8 +115,7 @@ object Solution {
           } else {
             val dangerZone = if ( goalMatches.size != 1 ) {
               val safePos = goalMatches.keys.filter(pos => !pos.equals(goalPos)).head
-              val box = node.boxes.find(b => goalMatches(goalPos) == b.getId).get
-              findDangerousPositions(vertices, goalPos, box, safePos, node)
+              findDangerousPositions(vertices, goalPos, safePos, node)
             } else {
               new HashSet[Position]
             }
@@ -136,8 +135,8 @@ object Solution {
     testGoals(goalsToSolve, (null, List()), threshold)
   }
 
-  def findDangerousPositions(vertices: HashSet[Position], goalPos: Position, box: Box,
-                             safeSpot: Position, node: Node): HashSet[Position] = {
+  def findDangerousPositions(vertices: HashSet[Position], goalPos: Position, safeSpot: Position,
+                             node: Node): HashSet[Position] = {
     Node.walls.add(goalPos)
     val empty = new Node(node.parent)
     empty.setAgent(new Agent(safeSpot, 0))
@@ -155,7 +154,7 @@ object Solution {
     }
   }
 
-  def removeBoxesFromPath(state: RemovalState, solutionMap: Map[Int, (List[Node], List[Position])],
+  def removeBoxesFromPath(state: RemovalState, goalMatch: Map[Position, Int], solved: List[Position], solutionMap: Map[Int, (List[Node], List[Position])],
                           dangerZone: HashSet[Position]): (RemovalState, Map[Int, (List[Node], List[Position])]) = {
     state.list match {
       case Nil => (state, solutionMap)
@@ -167,7 +166,7 @@ object Solution {
         }
         if ( state.solved.nonEmpty && needToAvoid.size == solutionMap(state.solved.head.getId)._2.size ) {
           val newSolutionMap = solutionMap.filter(_._1 != box.getId)
-          return removeBoxesFromPath(state.parent, newSolutionMap, dangerZone)
+          return removeBoxesFromPath(state.parent, goalMatch, solved, newSolutionMap, dangerZone)
         }
 
         val lockedNode = state.node.ChildNode()
@@ -180,7 +179,7 @@ object Solution {
         val boxesOnPath = lockedNode.boxes.filter(b => boxPath.contains(b.getPosition))
         if ( boxesOnPath.size > 2 && state.parent != null ) {
           val newSolutionMap = solutionMap.filter(_._1 != box.getId)
-          return removeBoxesFromPath(state.parent, newSolutionMap, dangerZone)
+          return removeBoxesFromPath(state.parent, goalMatch, solved, newSolutionMap, dangerZone)
         }
         boxesOnPath.foreach(_.setMovable(true))
         val strategy = new AdvancedStrategy(new AgentHeuristic(box, boxPath, emptyEdges))
@@ -189,9 +188,11 @@ object Solution {
           case result if result.isReachedThreshold && state.solved.isEmpty => (state, null)
           case result if result.getSolution == null && state.solved.isEmpty =>
             lockedNode.boxes.foreach(_.setMovable(true))
+            val solvedBoxes = goalMatch.filter(p => solved.contains(p._1)).values
+            lockedNode.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
             Search.removalSearch(strategy, lockedNode, state.threshold, box.getId, state.boxPath,
                                  state.goalBoxId, state.immovableBoxes.map(f=>f._2), needToAvoid, dangerZone) match {
-              case searchResult if searchResult.isReachedThreshold => (state, null)
+              case searchResult if searchResult.isReachedThreshold || searchResult.getSolution == null => (state, null)
               case searchResult =>
                 val solution = searchResult.getSolution
                 val newBoxPos = solution.last.boxes.find(b => b.getId == box.getId).get.getPosition
@@ -201,16 +202,16 @@ object Solution {
                 val newSolutionMap = solutionMap + (box.getId -> (solution.toList, newBoxPos :: needToAvoid))
                 val newSolved = state.solved ++ List(box)
                 val newState = RemovalState(cdr, newSolved, newNode, state.boxPath, state.goalBoxId, newImmovableBoxes, state, state.threshold - solution.length)
-                removeBoxesFromPath(newState, newSolutionMap, dangerZone)
+                removeBoxesFromPath(newState, goalMatch, solved, newSolutionMap, dangerZone)
             }
           case result if result.isReachedThreshold || result.getSolution == null =>
             val newSolutionMap = solutionMap.filter(_._1 != box.getId)
-            removeBoxesFromPath(state.parent, newSolutionMap, dangerZone)
+            removeBoxesFromPath(state.parent, goalMatch, solved, newSolutionMap, dangerZone)
           case result if result.getSolution.isEmpty =>
-            val newSolutionMap = solutionMap + (box.getId -> (List(), needToAvoid))
+            val newSolutionMap = solutionMap + (box.getId -> (List(), box.getPosition :: needToAvoid))
             val newSolved = state.solved ++ List(box)
             val newState = RemovalState(cdr, newSolved, state.node, state.boxPath, state.goalBoxId, state.immovableBoxes, state, state.threshold - result.getSolution.length)
-            removeBoxesFromPath(newState, newSolutionMap, dangerZone)
+            removeBoxesFromPath(newState, goalMatch, solved, newSolutionMap, dangerZone)
           case result =>
             val solution = result.getSolution
             val newBoxPos = solution.last.boxes.find(b => b.getId == box.getId).get.getPosition
@@ -220,7 +221,7 @@ object Solution {
             val newSolutionMap = solutionMap + (box.getId -> (solution.toList, newBoxPos :: needToAvoid))
             val newSolved = state.solved ++ List(box)
             val newState = RemovalState(cdr, newSolved, newNode, state.boxPath, state.goalBoxId, newImmovableBoxes, state, state.threshold - solution.length)
-            removeBoxesFromPath(newState, newSolutionMap, dangerZone)
+            removeBoxesFromPath(newState, goalMatch, solved, newSolutionMap, dangerZone)
         }
     }
   }
@@ -251,8 +252,9 @@ object Solution {
       state.node.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
       val agentPath = PathFinding.findPath2(state.node, box, state.node.getAgent.getPosition, edges)
       val boxPath = PathFinding.findPath2(node, box, goal, edges).reverse
-      val boxesOnPaths = state.node.boxes.filter(box => (boxPath.contains(box.getPosition) ||
-                                                        agentPath.contains(box.getPosition)) &&
+      val boxesOnPaths = state.node.boxes.filter(box => (dangerZone.contains(box.getPosition) ||
+                                                         boxPath.contains(box.getPosition) ||
+                                                         agentPath.contains(box.getPosition)) &&
                                                         box.getId != boxId)
       if ( boxesOnPaths.distinct.size > 1 ) {
         return null
@@ -280,7 +282,7 @@ object Solution {
       val (newState, newSolutionMap) = if ( state.list.size < 2 && dangerZone.isEmpty ) {
         (state, solutionMap)
       } else {
-        removeBoxesFromPath(state, solutionMap, dangerZone)
+        removeBoxesFromPath(state, goalMatch, solved, solutionMap, dangerZone)
       }
       savedGoals.foreach(goal => Node.goals.remove(goal._1))
       val newSolution = solve(newState, box, boxId)
