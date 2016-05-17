@@ -40,7 +40,7 @@ object Dependency {
   }
 
   def getGoalDependencies(permutations: List[Position], goalMatch: Map[Position, Int],
-                          initialState: Node): (Map[Position, List[Position]], Map[Position, Int]) = {
+                          initialState: Node, restarted: Boolean): (Map[Position, List[Position]], Map[Position, Int]) = {
     def calcDependency(goalDependencies: Map[Position, List[Position]],
                        goals: List[Position]): Map[Position, List[Position]] = {
       goals match {
@@ -60,13 +60,13 @@ object Dependency {
       (Map(permutations.head -> List()), goalMatch)
     } else {
       val dependencies = calcDependency(Map(), permutations)
-      if ( dependencies.values.exists(list => list.isEmpty) ) {
+      if ( dependencies.values.exists(list => list.isEmpty) || restarted ) {
         (dependencies, goalMatch)
       } else {
         val singleDependencies = dependencies.filter(pair => pair._2.size == 1).toList
         fixCircularDependencies(singleDependencies, goalMatch, needsRestart = false) match {
           case (_, false) => (dependencies, goalMatch)
-          case (newGoalMatches, true) => getGoalDependencies(permutations, newGoalMatches, initialState)
+          case (newGoalMatches, true) => getGoalDependencies(permutations, newGoalMatches, initialState, restarted = true)
         }
       }
     }
