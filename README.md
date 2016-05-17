@@ -26,7 +26,25 @@ Work in progress:
 
 ###4. Map progress
 
-####4.1 Single Agent
+#### 4.1 Single Agent
+##### Competition levels
+|Level|Current Length|Known Best|Time(s)|
+|:---|:---|:---|:---|
+|botbot|71|71|3.19|
+|boXboXboX|cant find solution|||
+|ButterBot|5643|5643|86.99|
+|DangerBot|701|701|3.417|
+|extra2||||
+|FortyTwo||||
+|Lazarus|199|199|2.096|
+|NoOp||||
+|Optimal||||
+|Sojourner|253|253|6.677|
+|Solo|209|209|3.36|
+|TAIM||||
+|teamhal|cant find solution|||
+|TheAgency||||
+|TheRedDot|83|83|2.39|
 #####Difficult
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
