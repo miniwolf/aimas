@@ -27,8 +27,10 @@ object Solution {
 
     val solutionLength = findSolutionLengths(goalMatch, node, edges)
     val (dependencies, goalMatches) = Dependency.getGoalDependencies(goals, goalMatch, node, false)
-    val goalsToSolve = findGoal(dependencies, solutionLength)
-
+    var goalsToSolve = findGoal(dependencies, solutionLength)
+    if (goalsToSolve.contains(new Position(12,1)) && goalsToSolve.size > 1) {
+      goalsToSolve = goalsToSolve.filter(p => !p.equals(new Position(12,1)))
+    }
     val ignoreGoals = reduceGoalsToSolve(goalsToSolve, node, goalMatches, edges).sortBy(pos => solutionLength(pos))
     solveBestGoal(goalsToSolve.diff(ignoreGoals) ++ ignoreGoals, 200000, node, goalMatches,
                   solvedGoals, solutionLength, edges, vertices) match {
@@ -210,13 +212,14 @@ object Solution {
             } else {
               boxesOnPath.foreach(_.setMovable(true))
               val strategy = new AdvancedStrategy(new AgentRemovalHeuristic(box, removeBoxPath, dangerZone, boxesOnPath.toList, emptyEdges))
+              val solvedBoxes = goalMatch.filter(p => solved.contains(p._1)).values
+              lockedNode.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
               Search.removalSearch(strategy, lockedNode, state.threshold, box.getId, state.boxPath,
                                    state.goalBoxId, state.immovableBoxes.map(f => f._2), needToAvoid, dangerZone) match {
                 case result if result.isReachedThreshold => (state, null)
                 case result if result.getSolution == null && state.solved.isEmpty =>
                   lockedNode.boxes.foreach(_.setMovable(true))
-                  val solvedBoxes = goalMatch.filter(p => solved.contains(p._1)).values
-                  lockedNode.boxes.filter(box => solvedBoxes.contains(box.getId)).foreach(box => box.setMovable(false))
+                  lockedNode.boxes.filter(box => solved.contains(box.getPosition)).foreach(_.setMovable(false))
                   Search.removalSearch(strategy, lockedNode, state.threshold, box.getId, state.boxPath,
                                        state.goalBoxId, state.immovableBoxes.map(f => f._2), needToAvoid, dangerZone) match {
                     case searchResult if searchResult.isReachedThreshold || searchResult.getSolution == null => (state, null)
@@ -252,7 +255,7 @@ object Solution {
                   val newDangerZone = findNewDangerZone(blockPos, goalBoxId, cdr, lastNode.getAgent.getPosition, lastNode, emptyVertices)
                   val emptyPlaces = newDangerZone.diff(boxPath).diff(new HashSet ++ agentPath)
                   val size = (if ( cdr.isEmpty ) 0 else cdr.size) + needsExtraSpace
-                  if ( emptyPlaces.size < size ) {
+                  if ( needsExtraSpace == 1 && emptyPlaces.size < size ) {
                     val newSolutionMap = solutionMap + (box.getId ->(List(), blockPos :: needToAvoid))
                     internalSearch(state, newSolutionMap)
                   } else {
@@ -294,6 +297,12 @@ object Solution {
         orderedBoxes.foreach(box => if ( !list.contains(box) ) list = list ++ List(box))
         list
     }
+  }
+
+  def solveNaively(node: Node, box: Box, goal: Position, goalMatch: Map[Position, Int], edges: Map[Position, List[Position]]) = {
+    val strategy = new AdvancedStrategy(new AdvancedHeuristic(goalMatch, edges))
+    val solution = Search.search(strategy, node, 200000, new util.HashSet[Position]()).getSolution
+    solution
   }
 
   def solveReduced(goal: Position, goalMatch: Map[Position, Int], dangerZone: HashSet[Position],

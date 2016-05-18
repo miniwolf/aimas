@@ -13,6 +13,7 @@ import scala.collection.immutable.Map
   * @author miniwolf
   */
 object LearnClient extends App {
+
   override def main(args: Array[String]) {
     val serverMessages: BufferedReader = new BufferedReader(new InputStreamReader(System.in))
     System.err.println("SearchClient initializing. I am sending this using the error output stream.")
@@ -33,9 +34,16 @@ object LearnClient extends App {
     val (_, edges) = Graph.construct(learnClient.emptyStartState)
     val goalMatches = matchGoalsWithBoxes(learnClient.startState, edges)
     val goalList = Node.goals.map { case (goalPos, goalChar) => goalPos -> goalChar }.toMap
-
-    val solution: List[Node] = Solution.findSolution(goalList.keys.toList, goalMatches, List(), List(),
-                                            learnClient.startState)
+    val goals = goalList.keys.toList
+    val solution: List[Node] = if ( goals.size == 1 ) {
+      val node = learnClient.startState
+      val goal = goals.head
+      val box = node.boxes.find(b => b.getId == goalMatches.get(goal).get).get
+      Solution.solveNaively(node, box, goal, goalMatches, edges).toList
+    } else {
+      Solution.findSolution(goalList.keys.toList, goalMatches, List(), List(),
+                            learnClient.startState)
+    }
     val timeSpent = (System.currentTimeMillis - startTime) / 1000f
     System.err.println(s"Summary: Time: $timeSpent\t ${Memory.stringRep()}")
     Node.walls.removeAll(goalList.keys.toList)
