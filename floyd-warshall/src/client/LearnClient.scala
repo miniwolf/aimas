@@ -83,8 +83,12 @@ object LearnClient extends App {
             currentBest.getId
           case box :: cdr if currentBest == null =>
             val currentPath = PathFinding.findPath2(initialState, box, goalPos, edges)
-            box.setGoalPath(currentPath)
-            getBestBox(box, cdr)
+            if ( currentPath.nonEmpty ) {
+              box.setGoalPath(currentPath)
+              getBestBox(box, cdr)
+            } else {
+              getBestBox(currentBest, cdr)
+            }
           case box :: cdr =>
             val currentPath = PathFinding.findPath2(initialState, box, goalPos, edges)
             box.setGoalPath(currentPath)
