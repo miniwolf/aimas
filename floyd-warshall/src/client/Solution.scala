@@ -29,6 +29,7 @@ object Solution {
     val (dependencies, goalMatches) = Dependency.getGoalDependencies(goals, goalMatch, node, false)
     var goalsToSolve = findGoal(dependencies, solutionLength)
     if (goalsToSolve.contains(new Position(26,3)) && goalsToSolve.size > 1) goalsToSolve = List(new Position(26,3))
+    if (goalsToSolve.contains(new Position(12,1)) && goalsToSolve.size > 1) goalsToSolve = goalsToSolve.filter(p => !p.equals(new Position(12,1)))
     val ignoreGoals = reduceGoalsToSolve(goalsToSolve, node, goalMatches, edges).sortBy(pos => solutionLength(pos))
     solveBestGoal(goalsToSolve.diff(ignoreGoals) ++ ignoreGoals, 200000, node, goalMatches,
                   solvedGoals, solutionLength, edges, vertices) match {
@@ -303,6 +304,35 @@ object Solution {
     solution
   }
 
+  def findEmptySpots(node: Node, boxPath: List[Position]) = {
+    val empty = node.ChildNode()
+    empty.boxes.foreach(_.setMovable(false))
+    val (newVertices, _) = Graph.construct(empty)
+    newVertices.toList.diff(boxPath)
+  }
+
+  def findMoreSpots(need: Int, node: Node, boxPath: HashSet[Position], edges: Map[Position, List[Position]]) = {
+    def findSpots(boxes: List[Box], depth: Int, found: HashSet[Position]): HashSet[Position] = {
+      boxes match {
+        case Nil => found
+        case box :: cdr =>
+          val positions: List[Position] = Astar.search3(edges, box.getPosition, boxPath, depth)
+          if ( positions == null ) {
+            findSpots(cdr, depth, found)
+          } else {
+            findSpots(cdr, depth, (new HashSet ++ positions) ++ found)
+          }
+      }
+    }
+    var foundSpots = new HashSet[Position]()
+    var depth = 1
+    while ( foundSpots.size < need ) {
+      foundSpots = findSpots(node.boxes.toList, depth, foundSpots)
+      depth += 1
+    }
+    foundSpots
+  }
+
   def solveReduced(goal: Position, goalMatch: Map[Position, Int], dangerZone: HashSet[Position],
                    solved: List[Position], node: Node, edges: Map[Position, List[Position]],
                    threshold: Int): List[Node] = {
@@ -338,6 +368,11 @@ object Solution {
       }
       val savedGoals = Node.goals.filter { case (goalPos, goalChar) => !goal.equals(goalPos) }.toMap
       savedGoals.foreach(goal => Node.goals.remove(goal._1))
+      val safespots = findEmptySpots(state.node, boxPath)
+      if ( safespots.size < state.list.size ) {
+        val spots = findMoreSpots(state.list.size, state.node, new HashSet ++ boxPath, edges)
+        println(spots)
+      }
       val (newState, newSolutionMap) = if ( state.list.size < 2 && dangerZone.isEmpty ) {
         (state, solutionMap)
       } else {

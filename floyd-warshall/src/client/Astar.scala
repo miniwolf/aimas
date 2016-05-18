@@ -78,7 +78,7 @@ object Astar {
     searchInternal(openEntryMap, closedSet, openSet, edges, goal)
   }
 
-  def search3(edges: Map[Position, List[Position]], start: Position, path: HashSet[Position], depth: Int): Position = {
+  def search3(edges: Map[Position, List[Position]], start: Position, path: HashSet[Position], depth: Int): List[Position] = {
     val eKeys = edges.keySet
     if ( !eKeys.contains(start) ) {
       return null
@@ -93,26 +93,20 @@ object Astar {
 
     while ( !openSet.isEmpty ) {
       val leafNode: Node = openSet.dequeueMin().getValue
-      if ( !path.contains(leafNode.position) ) {
-        if ( foundNodes.size < depth ) {
-          foundNodes = leafNode.position :: foundNodes
-        } else {
-          return leafNode.position
-        }
+      if ( leafNode.gValue == depth && !path.contains(leafNode.position) ) {
+        foundNodes = leafNode.position :: foundNodes
       }
 
       closedSet += leafNode.position
-      edges(leafNode.position).filter(n => !closedSet.contains(n)
-                                        && !openEntryMap.keySet.contains(new Node(null, n, 0)))
-                              .foreach { case child =>
-        val childNode = new Node(leafNode, child, leafNode.gValue + 1)
-        openEntryMap += (childNode -> openSet.enqueue(childNode, childNode.gValue))
+      if ( leafNode.gValue < depth ) {
+        edges(leafNode.position).filter(n => !closedSet.contains(n)
+          && !openEntryMap.keySet.contains(new Node(null, n, 0)))
+          .foreach { case child =>
+            val childNode = new Node(leafNode, child, leafNode.gValue + 1)
+            openEntryMap += (childNode -> openSet.enqueue(childNode, childNode.gValue))
+          }
       }
     }
-    if ( foundNodes.nonEmpty ) {
-      foundNodes.head
-    } else {
-      null
-    }
+    foundNodes
   }
 }
