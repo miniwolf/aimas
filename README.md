@@ -30,20 +30,21 @@ Work in progress:
 ##### Competition levels
 |Level|Current Length|Known Best|Time(s)|
 |:---|:---|:---|:---|
-|botbot|71|71|3.19|
-|boXboXboX|cant find solution|||
-|ButterBot|5643|5643|86.99|
-|DangerBot|701|701|3.417|
-|extra2||||
+|AIMuffins|1157|1157|15.66|
+|botbot|error|71|3.19|
+|boXboXboX|88|88|5.951|
+|ButterBot|5547|5547|86.99|
+|DangerBot|707|701|3.417|
+|extra2|13910|13910|17.259|
 |FortyTwo||||
-|Lazarus|199|199|2.096|
+|Lazarus|215|199|2.096|
 |NoOp||||
-|Optimal||||
-|Sojourner|253|253|6.677|
+|Optimal|732|732|20.702|
+|Sojourner|263|253|6.677|
 |Solo|209|209|3.36|
-|TAIM||||
+|TAIM|1119|1119|3.124|
 |teamhal|cant find solution|||
-|TheAgency||||
+|TheAgency|4227|4227|80.926|
 |TheRedDot|83|83|2.39|
 #####Difficult
 |Level|Current Length|Known Best|Time(s)|

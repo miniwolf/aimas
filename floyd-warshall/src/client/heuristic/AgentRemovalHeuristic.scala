@@ -15,7 +15,7 @@ class AgentRemovalHeuristic(boxToRemove: Box, boxPath: List[Position], dangerZon
   override def h(n: Node): Int = {
     val matchingBox = n.boxes.find(box => box.getId == boxToRemove.getId).get
     val numberOfIssues = issueBoxes.count(box => dangerZone.contains(box.getPosition))
-    10 * PathFinding.findPath2(n, matchingBox, n.getAgent.getPosition, edges).length + numberOfIssues
+    20 * PathFinding.findPath2(n, matchingBox, n.getAgent.getPosition, edges).length + numberOfIssues
   }
 }
 

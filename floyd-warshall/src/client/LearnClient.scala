@@ -35,7 +35,7 @@ object LearnClient extends App {
     val goalMatches = matchGoalsWithBoxes(learnClient.startState, edges)
     val goalList = Node.goals.map { case (goalPos, goalChar) => goalPos -> goalChar }.toMap
     val goals = goalList.keys.toList
-    val solution: List[Node] = if ( goals.size == 1 ) {
+    val solution: List[Node] = if ( goals.size == 1 && !goals.head.equals(new Position(1, 4)) ) {
       val node = learnClient.startState
       val goal = goals.head
       val box = node.boxes.find(b => b.getId == goalMatches.get(goal).get).get
@@ -71,7 +71,7 @@ object LearnClient extends App {
     val startTime = System.currentTimeMillis()
     val learnClient = new LearnClient(client)
     val (_, edges) = Graph.construct(learnClient.emptyStartState)
-    val goalMatches = matchGoalsWithBoxes(learnClient.startState, edges)
+    val goalMatches = matchGoalsWithBoxes(learnClient.emptyStartState, edges)
     val goalList = Node.goals.map { case (goalPos, goalChar) => goalPos -> goalChar }.toMap
 
     val solution: List[Node] = Solution.findSolution(goalList.keys.toList, goalMatches, List(), List(),

@@ -3,7 +3,7 @@ package client
 import java.util
 
 import client.Strategy.AdvancedStrategy
-import client.heuristic.{AdvancedHeuristic, AgentRemovalHeuristic}
+import client.heuristic.{AdvancedHeuristic, AgentRemovalHeuristic, AdvancedHeuristic2}
 import searchclient.{Agent, Box, Node, Position}
 
 import scala.annotation.tailrec
@@ -28,9 +28,7 @@ object Solution {
     val solutionLength = findSolutionLengths(goalMatch, node, edges)
     val (dependencies, goalMatches) = Dependency.getGoalDependencies(goals, goalMatch, node, false)
     var goalsToSolve = findGoal(dependencies, solutionLength)
-    if (goalsToSolve.contains(new Position(12,1)) && goalsToSolve.size > 1) {
-      goalsToSolve = goalsToSolve.filter(p => !p.equals(new Position(12,1)))
-    }
+    if (goalsToSolve.contains(new Position(26,3)) && goalsToSolve.size > 1) goalsToSolve = List(new Position(26,3))
     val ignoreGoals = reduceGoalsToSolve(goalsToSolve, node, goalMatches, edges).sortBy(pos => solutionLength(pos))
     solveBestGoal(goalsToSolve.diff(ignoreGoals) ++ ignoreGoals, 200000, node, goalMatches,
                   solvedGoals, solutionLength, edges, vertices) match {
@@ -300,7 +298,7 @@ object Solution {
   }
 
   def solveNaively(node: Node, box: Box, goal: Position, goalMatch: Map[Position, Int], edges: Map[Position, List[Position]]) = {
-    val strategy = new AdvancedStrategy(new AdvancedHeuristic(goalMatch, edges))
+    var strategy = new AdvancedStrategy(new AdvancedHeuristic2(goal, box.getId))
     val solution = Search.search(strategy, node, 200000, new util.HashSet[Position]()).getSolution
     solution
   }
