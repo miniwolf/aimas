@@ -12,12 +12,10 @@ class AdvancedHeuristic2(goalState: Position, goalBoxId: Int) extends Heuristic 
   def getManhattanDistance(boxPos: Position, pos: Position) = Math.abs(boxPos.getX - pos.getX) + Math.abs(boxPos.getY - pos.getY)
 
   def h(n: Node): Int = {
-    val pos = n.getAgent.getPosition
-    val boxPos = n.boxes.filter(box => box.getId == goalBoxId).get(0).getPosition
-    var fakeBoxes = n.boxes.filter(box => box.getId != goalBoxId)
-    var result = 15 * (getManhattanDistance(boxPos, goalState) + getManhattanDistance(pos, boxPos))
-    fakeBoxes.foreach(box => result = result + 35 - getManhattanDistance(box.getPosition, goalState) )
-    result
+    val boxPos = n.boxes.find(box => box.getId == goalBoxId).get.getPosition
+    val fakeBoxes = n.boxes.filter(box => box.getId != goalBoxId)
+    val result = 15 * (getManhattanDistance(boxPos, goalState) + getManhattanDistance(n.getAgent.getPosition, boxPos))
+    result + fakeBoxes.map(box => 35 - getManhattanDistance(box.getPosition, goalState)).sum
   }
 }
 

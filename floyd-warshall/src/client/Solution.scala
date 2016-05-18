@@ -298,7 +298,7 @@ object Solution {
   }
 
   def solveNaively(node: Node, box: Box, goal: Position, goalMatch: Map[Position, Int], edges: Map[Position, List[Position]]) = {
-    var strategy = new AdvancedStrategy(new AdvancedHeuristic2(goal, box.getId))
+    val strategy = new AdvancedStrategy(new AdvancedHeuristic2(goal, box.getId))
     val solution = Search.search(strategy, node, 200000, new util.HashSet[Position]()).getSolution
     solution
   }

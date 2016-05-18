@@ -24,8 +24,14 @@ object Astar {
     def canEqual(other: Any): Boolean = other.isInstanceOf[Node]
 
     override def equals(other: Any): Boolean = other match {
-      case that: Node => (that canEqual this) && position == that.position
+      case that: Node => (that canEqual this) && position.equals(that.position)
       case _ => false
+    }
+
+
+    override def hashCode: Int = {
+      val state = Seq(position)
+      state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
     }
   }
 
@@ -48,7 +54,7 @@ object Astar {
         children match {
           case Nil => openEntryMap
           case child :: cdr =>
-            val pathCost = if ( boxSet.contains(child) ) { 2 } else { 1 }
+            val pathCost = if ( boxSet.contains(child) ) 2 else 1
             val childNode = new Node(leafNode, child, leafNode.gValue + pathCost)
             val newOpenEntryMap = openEntryMap + (childNode -> openSet.enqueue(childNode, childNode.gValue + heuristic(child, goal)))
             addChildren(cdr, newOpenEntryMap, leafNode, openSet, goal, boxSet)
@@ -63,7 +69,7 @@ object Astar {
             case leafNode =>
               val newClosedSet = closedSet + leafNode.position
               val children = edges(leafNode.position).filter(n => !closedSet.contains(n)
-                && !openEntryMap.keySet.contains(new Node(null, n, 0)))
+                && !openEntryMap.contains(new Node(null, n, 0)))
               val newOpenEntryMap = addChildren(children, openEntryMap, leafNode, openSet, goal, boxSet)
               searchInternal(newOpenEntryMap, newClosedSet, openSet, edges, goal)
           }
